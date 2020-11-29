@@ -4,7 +4,8 @@
 #include "priority_queue.h"
 
 /**we can add here more things if needed! */
-struct PriorityQueue_t{
+struct PriorityQueue_t
+{
     PQElement pqe_element; 
     PQElementPriority pq_element_priority;
     PriorityQueue next_in_line;
@@ -45,7 +46,8 @@ PriorityQueue pqCreate(CopyPQElement copy_element, FreePQElement free_element, E
  }
 
 /*DELETE AFTER YOU READ - I changed variable name from "priority_queue" to "copied_priority_queue" - more informative*/
- PriorityQueue pqCopy(PriorityQueue queue){
+ PriorityQueue pqCopy(PriorityQueue queue)
+ {
     if(queue == NULL)
     {
         return NULL;
@@ -63,8 +65,7 @@ PriorityQueue pqCreate(CopyPQElement copy_element, FreePQElement free_element, E
     /**Maybe there is a way to make the code shotrer and not duplicate*/
     /**Also, maybe we don't want to pass the fileds of the pointers to the functions to every new element in the queue.*/
     /**Also, I am not sure if we are supposed to use the iterator inside the function or not .*/
-
-
+    
     while(queue->iterator!=NULL) 
     {
         copied_priority_queue->iterator = pqCreate(queue->iterator->copyElement, queue->iterator->freePqElement, queue->iterator->equalPqElement, queue->iterator->copyPqElementPriority, 
@@ -83,18 +84,25 @@ PriorityQueue pqCreate(CopyPQElement copy_element, FreePQElement free_element, E
  }
 
 /** I am not sure if we are supposed to use the iterator inside the function or not .*/
- pqContains(PriorityQueue queue, PQElement element){
+ bool pqContains(PriorityQueue queue, PQElement element)
+ {
      if(element == NULL || queue == NULL)
+     {
          return false; 
+     }
      queue->iterator = queue; 
      while(queue->iterator != NULL)
      {
          if(queue->equalPqElement(queue->pqe_element, element)==0)
+         {
             return true;
+         }
         queue->iterator = queue->iterator->next_in_line; 
      }
      return false; 
  }
+
+
 
 
  
