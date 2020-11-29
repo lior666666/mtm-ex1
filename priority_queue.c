@@ -19,7 +19,6 @@ struct PriorityQueue_t
     ComparePQElementPriorities comparePqElementPriority
 };
 
-/*DELETE AFTER YOU READ - remember that we must add {} in condition statment even if there is just one row inside*/
 PriorityQueue pqCreate(CopyPQElement copy_element, FreePQElement free_element, EqualPQElements equal_elements,
                     CopyPQElementPriority copy_priority,FreePQElementPriority free_priority, ComparePQElementPriorities compare_priorities)
 {
@@ -44,62 +43,105 @@ PriorityQueue pqCreate(CopyPQElement copy_element, FreePQElement free_element, E
     priority_queue->iterator = NULL;
     return priority_queue;
  }
-
-/*DELETE AFTER YOU READ - I changed variable name from "priority_queue" to "copied_priority_queue" - more informative*/
+ /** Internal function, to create next element in our queue*/ 
+static PriorityQueue CreateNextInLine(PriorityQueue our_queue, PQElement element, PQElementPriority element_priority)
+{
+    PriorityQueue priority_queue = malloc(sizeof(PriorityQueue));
+    if(priority_queue==NULL)
+    {
+     return NULL;
+    }
+    priority_queue-> copyElement = NULL;
+    priority_queue-> freePqElement = NULL;
+    priority_queue-> equalPqElement = NULL;
+    priority_queue-> copyPqElementPriority = NULL;
+    priority_queue-> freePqElementPriority = NULL;
+    priority_queue-> comparePqElementPriority = NULL;
+    priority_queue->pqe_element = our_queue->copyElement(element);
+    if(priority_queue->pqe_element ==NULL)
+    {
+        free(priority_queue);
+        return NULL;
+    }
+    priority_queue->pq_element_priority = our_queue->copyPqElementPriority(element_priority);
+     if(priority_queue->pq_element_priority ==NULL)
+    {
+        free(priority_queue);
+        return NULL;
+    }
+    priority_queue-> next_in_line = NULL;
+    priority_queue->iterator = NULL;
+    return priority_queue; 
+}
  PriorityQueue pqCopy(PriorityQueue queue)
  {
     if(queue == NULL)
     {
         return NULL;
     }
+     /** Allocating the new queue for the first time.*/ 
     PriorityQueue copied_priority_queue  = pqCreate(queue->copyElement, queue->freePqElement, queue->equalPqElement, queue->copyPqElementPriority, 
     queue->freePqElementPriority, queue->comparePqElementPriority);
     if(copied_priority_queue==NULL)
     {
         return NULL;
     }
-    copied_priority_queue->pqe_element = queue->copyElement(queue->pqe_element);
-    copied_priority_queue->pq_element_priority = queue->copyPqElementPriority(queue->pq_element_priority);
-    copied_priority_queue->iterator = copied_priority_queue->next_in_line;
-    queue->iterator = queue->next_in_line;
+     /** making temp pointers to go through the queue.*/ 
+    PriorityQueue temp_queue_pointer = queue->next_in_line;
+    PriorityQueue temp_copied_priority_queue_pointer = copied_priority_queue;
+
     /**Maybe there is a way to make the code shotrer and not duplicate*/
-    /**Also, maybe we don't want to pass the fileds of the pointers to the functions to every new element in the queue.*/
-    /**Also, I am not sure if we are supposed to use the iterator inside the function or not .*/
     
-    while(queue->iterator!=NULL) 
+    while(temp_queue_pointer!=NULL) 
     {
-        copied_priority_queue->iterator = pqCreate(queue->iterator->copyElement, queue->iterator->freePqElement, queue->iterator->equalPqElement, queue->iterator->copyPqElementPriority, 
-        queue->iterator->freePqElementPriority, queue->iterator->comparePqElementPriority);
-        if(copied_priority_queue->iterator==NULL)
+        /**copying the next one in the queue*/
+        temp_copied_priority_queue_pointer->next_in_line = CreateNextInLine(copied_priority_queue, temp_queue_pointer->pqe_element, temp_queue_pointer->pq_element_priority);
+        if(temp_copied_priority_queue_pointer->next_in_line==NULL)
         {
             pqDestroy(copied_priority_queue);
             return NULL;
         }
-        copied_priority_queue->iterator->pqe_element = queue->iterator->copyElement(queue->iterator->pqe_element);
-        copied_priority_queue->iterator->pq_element_priority = queue->iterator->copyPqElementPriority(queue->iterator->pq_element_priority);
-        copied_priority_queue->iterator = copied_priority_queue->iterator->next_in_line;
-        queue->iterator = queue->iterator->next_in_line;
+        temp_queue_pointer = temp_queue_pointer->next_in_line;
+        temp_copied_priority_queue_pointer = temp_copied_priority_queue_pointer->next_in_line;
     }
     return copied_priority_queue;
  }
 
-/** I am not sure if we are supposed to use the iterator inside the function or not .*/
  bool pqContains(PriorityQueue queue, PQElement element)
  {
      if(element == NULL || queue == NULL)
      {
          return false; 
      }
-     queue->iterator = queue; 
-     while(queue->iterator != NULL)
+     PriorityQueue temp_queue_pointer = queue;
+     while(temp_queue_pointer != NULL)
      {
-         if(queue->equalPqElement(queue->pqe_element, element)==0)
+         if(queue->equalPqElement(temp_queue_pointer->pqe_element, element))
          {
             return true;
          }
-        queue->iterator = queue->iterator->next_in_line; 
+        temp_queue_pointer = temp_queue_pointer->next_in_line; 
      }
      return false; 
  }
 
-/**test*/
+
+/** THIS FUNCTION NOT FINISHED YET!!!*/
+PriorityQueueResult pqChangePriority(PriorityQueue queue, PQElement element, PQElementPriority old_priority, PQElementPriority new_priority)
+{
+    if(queue == NULL || element == NULL || old_priority == NULL || new_priority == NULL)
+    {
+        return PQ_NULL_ARGUMENT; 
+    }
+    PriorityQueue temp_queue_pointer = queue->next_in_line;
+    while (temp_queue_pointer!=NULL)
+    {
+        if(queue->equalPqElement(temp_queue_pointer->pqe_element, element) == true && queue->comparePqElementPriority(temp_queue_pointer->pq_element_priority,old_priority) == 0)
+        {
+            /** continue from here!*/ 
+        }
+    }
+    return PQ_ELEMENT_DOES_NOT_EXISTS;
+}
+
+
