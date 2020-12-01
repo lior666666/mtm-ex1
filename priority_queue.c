@@ -221,8 +221,13 @@ PriorityQueueResult pqChangePriority(PriorityQueue queue, PQElement element, PQE
             }
             temp_queue_previous->next_in_line = new_element_in_queue;
             new_element_in_queue->next_in_line = current_queue_pointer->next_in_line;
+
+            //destroy the element in queue
             current_queue_pointer->next_in_line = NULL;
-            pqDestroy(current_queue_pointer); //destroy the current that has copied
+            queue_head->freePqElement(current_queue_pointer->pqe_element);
+            queue_head->freePqElementPriority(current_queue_pointer->pq_element_priority);
+            free(current_queue_pointer);
+
             queue_head->iterator = NULL; //Iterator's value is undefined after this operation
             return PQ_SUCCESS;
         }
@@ -245,7 +250,9 @@ PriorityQueueResult pqRemove(PriorityQueue queue)
     {
         queue_head->next_in_line = element_to_remove->next_in_line;
         element_to_remove->next_in_line = NULL;
-        pqDestroy(element_to_remove);
+        queue_head->freePqElement(element_to_remove->pqe_element);
+        queue_head->freePqElementPriority(element_to_remove->pq_element_priority);
+        free(element_to_remove);
     }
     queue_head->iterator = NULL; //Iterator's value is undefined after this operation
     return PQ_SUCCESS; //Should we return success if there in no REAL elements in the queue but the queue exist? need to check
@@ -267,7 +274,9 @@ PriorityQueueResult pqRemoveElement(PriorityQueue queue, PQElement element)
         {
             previous_queue = current_queue_pointer->next_in_line;
             current_queue_pointer->next_in_line = NULL;
-            pqDestroy(current_queue_pointer);
+            queue_head->freePqElement(current_queue_pointer->pqe_element);
+            queue_head->freePqElementPriority(current_queue_pointer->pq_element_priority);
+            free(current_queue_pointer);
             queue_head->iterator = NULL; //Iterator's value is undefined after this operation
             return PQ_SUCCESS;
         }
