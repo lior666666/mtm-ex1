@@ -247,6 +247,7 @@ PriorityQueueResult pqRemove(PriorityQueue queue)
         element_to_remove->next_in_line = NULL;
         pqDestroy(element_to_remove);
     }
+    queue_head->iterator = NULL; //Iterator's value is undefined after this operation
     return PQ_SUCCESS; //Should we return success if there in no REAL elements in the queue but the queue exist? need to check
 }
 
@@ -267,6 +268,7 @@ PriorityQueueResult pqRemoveElement(PriorityQueue queue, PQElement element)
             previous_queue = current_queue_pointer->next_in_line;
             current_queue_pointer->next_in_line = NULL;
             pqDestroy(current_queue_pointer);
+            queue_head->iterator = NULL; //Iterator's value is undefined after this operation
             return PQ_SUCCESS;
         }
         current_queue_pointer = current_queue_pointer->next_in_line;
