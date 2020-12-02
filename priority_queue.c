@@ -76,6 +76,19 @@ static void insertElementPointer(PriorityQueue queue_head, PriorityQueue new_ele
     new_element_in_queue->next_in_line = NULL;
 }
 
+ /** Internal function, to destroy all elements in the queue
+  * recieve the head of queue, the free functions*/ 
+void pqDestroyElements(PriorityQueue queue, FreePQElement free_pq_element, FreePQElementPriority free_pq_element_priority)
+{
+    while(queue != NULL)
+    {
+        free_pq_element(queue->pqe_element);
+        free_pq_element_priority(queue->pq_element_priority);
+        pqDestroyElements(queue->next_in_line, free_pq_element, free_pq_element_priority); //destroy all the list with recursion
+        free(queue);
+    }
+}
+
 //*** 1 ***
 PriorityQueue pqCreate(CopyPQElement copy_element, FreePQElement free_element, EqualPQElements equal_elements,
                     CopyPQElementPriority copy_priority,FreePQElementPriority free_priority, ComparePQElementPriorities compare_priorities)
@@ -105,13 +118,7 @@ PriorityQueue pqCreate(CopyPQElement copy_element, FreePQElement free_element, E
 //*** 2 ***
 void pqDestroy(PriorityQueue queue)
 {
-    while(queue != NULL)
-    {
-        queue->freePqElement(queue->pqe_element);
-        queue->freePqElementPriority(queue->pq_element_priority);
-        pqDestroy(queue->next_in_line); //destroy all the list with recursion
-        free(queue);
-    }
+    pqDestroyElements(queue, queue->freePqElement, queue->freePqElementPriority);
 }
 
 //*** 3 ***
@@ -122,6 +129,7 @@ PriorityQueue pqCopy(PriorityQueue queue)
     {
         return NULL;
     }
+    queue_head->iterator = NULL;
     /** Allocating the new queue for the first time.*/ 
     PriorityQueue copied_priority_queue  = pqCreate(queue_head->copyElement, queue_head->freePqElement, queue_head->equalPqElement, queue_head->copyPqElementPriority, 
     queue_head->freePqElementPriority, queue_head->comparePqElementPriority);
@@ -129,7 +137,6 @@ PriorityQueue pqCopy(PriorityQueue queue)
     {
         return NULL;
     }
-    queue_head->iterator = NULL; // Should we make this null here? What happen if the malloc failed?
 
     /** making temp pointers to go through the queue.*/ 
     PriorityQueue temp_queue_pointer = queue_head->next_in_line;
@@ -186,11 +193,14 @@ bool pqContains(PriorityQueue queue, PQElement element)
 PriorityQueueResult pqInsert(PriorityQueue queue, PQElement element, PQElementPriority priority)
 {
     PriorityQueue queue_head = queue;
+    if(queue_head != NULL)
+    {
+        queue_head->iterator = NULL;
+    }
     if (queue_head == NULL || element == NULL || priority == NULL)
     {
         return PQ_NULL_ARGUMENT;
     }
-    queue_head->iterator = NULL;
     PriorityQueue new_element_in_queue = createNextInLine(queue_head, element, priority);
     if(new_element_in_queue == NULL)
     {
@@ -204,6 +214,10 @@ PriorityQueueResult pqInsert(PriorityQueue queue, PQElement element, PQElementPr
 PriorityQueueResult pqChangePriority(PriorityQueue queue, PQElement element, PQElementPriority old_priority, PQElementPriority new_priority)
 {
     PriorityQueue queue_head = queue;
+    if(queue_head != NULL)
+    {
+        queue_head->iterator = NULL;
+    }
     if(queue_head == NULL || element == NULL || old_priority == NULL || new_priority == NULL)
     {
         return PQ_NULL_ARGUMENT; 
@@ -214,21 +228,16 @@ PriorityQueueResult pqChangePriority(PriorityQueue queue, PQElement element, PQE
     {
         if(queue_head->equalPqElement(current_queue_pointer->pqe_element, element) == true && queue_head->comparePqElementPriority(current_queue_pointer->pq_element_priority,old_priority) == 0) 
         {
-            PriorityQueue new_element_in_queue = createNextInLine(queue_head, element, new_priority);
-            if(new_element_in_queue == NULL) //if copy function failed in createNextInLine
+            PriorityQueue temp_priority_element = queue_head->copyPqElementPriority(new_priority);
+            if(temp_priority_element == NULL) 
             {
                 return PQ_OUT_OF_MEMORY;
             }
-            temp_queue_previous->next_in_line = new_element_in_queue;
-            new_element_in_queue->next_in_line = current_queue_pointer->next_in_line;
-
-            //destroy the element in queue
+            temp_queue_previous->next_in_line = current_queue_pointer->next_in_line;
             current_queue_pointer->next_in_line = NULL;
-            queue_head->freePqElement(current_queue_pointer->pqe_element);
             queue_head->freePqElementPriority(current_queue_pointer->pq_element_priority);
-            free(current_queue_pointer);
-
-            queue_head->iterator = NULL; //Iterator's value is undefined after this operation
+            current_queue_pointer->pq_element_priority = temp_priority_element;
+            insertElementPointer(queue, current_queue_pointer);
             return PQ_SUCCESS;
         }
         current_queue_pointer = current_queue_pointer->next_in_line;
@@ -245,8 +254,9 @@ PriorityQueueResult pqRemove(PriorityQueue queue)
     {
         return PQ_NULL_ARGUMENT;
     }
+    queue_head->iterator = NULL;
     PriorityQueue element_to_remove = queue_head->next_in_line;
-    if(element_to_remove != NULL) //if there is REAL elements in the queue;
+    if(element_to_remove != NULL) //if there is REAL elements in the queue
     {
         queue_head->next_in_line = element_to_remove->next_in_line;
         element_to_remove->next_in_line = NULL;
@@ -254,14 +264,17 @@ PriorityQueueResult pqRemove(PriorityQueue queue)
         queue_head->freePqElementPriority(element_to_remove->pq_element_priority);
         free(element_to_remove);
     }
-    queue_head->iterator = NULL; //Iterator's value is undefined after this operation
-    return PQ_SUCCESS; //Should we return success if there in no REAL elements in the queue but the queue exist? need to check
+    return PQ_SUCCESS;
 }
 
 //*** 9 ***
 PriorityQueueResult pqRemoveElement(PriorityQueue queue, PQElement element)
 {
     PriorityQueue queue_head = queue;
+    if(queue_head != NULL)
+    {
+        queue_head->iterator = NULL;
+    }
     if(queue_head == NULL || element == NULL)
     {
         return PQ_NULL_ARGUMENT;
@@ -272,16 +285,61 @@ PriorityQueueResult pqRemoveElement(PriorityQueue queue, PQElement element)
     {
         if(queue_head->equalPqElement(current_queue_pointer->pqe_element, element))
         {
-            previous_queue = current_queue_pointer->next_in_line;
+            previous_queue->next_in_line = current_queue_pointer->next_in_line;
             current_queue_pointer->next_in_line = NULL;
             queue_head->freePqElement(current_queue_pointer->pqe_element);
             queue_head->freePqElementPriority(current_queue_pointer->pq_element_priority);
             free(current_queue_pointer);
-            queue_head->iterator = NULL; //Iterator's value is undefined after this operation
             return PQ_SUCCESS;
         }
         current_queue_pointer = current_queue_pointer->next_in_line;
         previous_queue = previous_queue->next_in_line; 
     }
     return PQ_ELEMENT_DOES_NOT_EXISTS;
+}
+
+//*** 10 ***
+PriorityQueueResult pqClear(PriorityQueue queue)
+{
+    PriorityQueue queue_head = queue;
+    if(queue_head == NULL)
+    {
+        return PQ_NULL_ARGUMENT;
+    }
+    queue_head->iterator = NULL;
+    pqDestroyElements(queue_head->next_in_line, queue_head->freePqElement, queue_head->freePqElementPriority);
+    return PQ_SUCCESS;
+}
+
+//*** 11 ***
+PQElement pqGetFirst(PriorityQueue queue)
+{
+    PriorityQueue queue_head = queue;
+    if(queue_head == NULL || queue_head->next_in_line == NULL)
+    {
+        return NULL;
+    }
+    queue_head->iterator = queue_head->next_in_line; 
+    return queue_head->iterator->pqe_element;
+}
+
+//*** 12 ***
+PQElement pqGetNext(PriorityQueue queue)
+{
+    PriorityQueue queue_head = queue;
+    if(queue_head == NULL || queue_head->iterator == NULL)
+    {
+        return NULL;
+    }
+    PriorityQueue current_queue_pointer = queue_head->next_in_line;
+    while(current_queue_pointer != NULL && queue_head->iterator != current_queue_pointer)
+    {
+        current_queue_pointer = current_queue_pointer->next_in_line;
+    }
+    if(current_queue_pointer == NULL || current_queue_pointer->next_in_line == NULL)
+    {
+        return NULL;
+    }
+    queue_head->iterator = current_queue_pointer->next_in_line;
+    return queue_head->iterator->pqe_element;
 }
