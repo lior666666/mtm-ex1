@@ -159,14 +159,15 @@ PriorityQueueResult pqChangePriority(PriorityQueue queue, PQElement element, PQE
     {
         if(queue->equalPqElement(current_queue_pointer->pqe_element, element) == true && queue->comparePqElementPriority(current_queue_pointer->pq_element_priority,old_priority) == 0) 
         {
-            temp_queue_previous = temp_queue_previous->next_in_line->next_in_line;
-            current_queue_pointer->next_in_line = NULL; 
-            current_queue_pointer->freePqElementPriority(current_queue_pointer->pq_element_priority);
-            current_queue_pointer->copyPqElementPriority(new_priority);
-            if(current_queue_pointer->pq_element_priority==NULL)
+            PriorityQueue  temp_priority_element = queue->copyPqElementPriority(new_priority); // we wnat the check first if we managed to copy the priority elemnt before changing anything in the queue. 
+            if(temp_priority_element==NULL) 
             {
                 return PQ_OUT_OF_MEMORY;
             }
+            temp_queue_previous->next_in_line = current_queue_pointer->next_in_line;
+            current_queue_pointer->next_in_line = NULL; // basically, we can do without this line, but it makes things clearer. 
+            queue->freePqElementPriority(current_queue_pointer->pq_element_priority);
+            current_queue_pointer->pq_element_priority = temp_priority_element;
             insertElementPointer(queue, current_queue_pointer);
             return PQ_SUCCESS;
         }
@@ -188,8 +189,10 @@ PriorityQueueResult pqRemoveElement(PriorityQueue queue, PQElement element)
     {
         if(queue->equalPqElement(current_queue_pointer->pqe_element,element))
         {
-            previous_queue = previous_queue->next_in_line->next_in_line;
+            previous_queue->next_in_line = current_queue_pointer->next_in_line;
             queue->freePqElement(current_queue_pointer->pqe_element);
+            queue->freePqElementPriority(current_queue_pointer->pq_element_priority);
+            free(current_queue_pointer);
             return PQ_SUCCESS;
         }
         current_queue_pointer = current_queue_pointer->next_in_line;
@@ -211,5 +214,4 @@ PQElement pqGetFirst(PriorityQueue queue)
     queue->iterator = queue->next_in_line; 
     return queue->iterator; 
 }
-//We need to think in all function what if the user places int the function queue that starts not from the first element, because than all the generic functions will be NULL.
 
