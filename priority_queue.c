@@ -260,9 +260,7 @@ PriorityQueueResult pqRemove(PriorityQueue queue)
     {
         queue_head->next_in_line = element_to_remove->next_in_line;
         element_to_remove->next_in_line = NULL;
-        queue_head->freePqElement(element_to_remove->pqe_element);
-        queue_head->freePqElementPriority(element_to_remove->pq_element_priority);
-        free(element_to_remove);
+        pqDestroyElements(element_to_remove, queue_head->freePqElement, queue_head->freePqElementPriority);
     }
     return PQ_SUCCESS;
 }
@@ -287,9 +285,7 @@ PriorityQueueResult pqRemoveElement(PriorityQueue queue, PQElement element)
         {
             previous_queue->next_in_line = current_queue_pointer->next_in_line;
             current_queue_pointer->next_in_line = NULL;
-            queue_head->freePqElement(current_queue_pointer->pqe_element);
-            queue_head->freePqElementPriority(current_queue_pointer->pq_element_priority);
-            free(current_queue_pointer);
+            pqDestroyElements(current_queue_pointer, queue_head->freePqElement, queue_head->freePqElementPriority);
             return PQ_SUCCESS;
         }
         current_queue_pointer = current_queue_pointer->next_in_line;
@@ -327,19 +323,10 @@ PQElement pqGetFirst(PriorityQueue queue)
 PQElement pqGetNext(PriorityQueue queue)
 {
     PriorityQueue queue_head = queue;
-    if(queue_head == NULL || queue_head->iterator == NULL)
+    if(queue_head == NULL || queue_head->iterator == NULL || queue_head->iterator->next_in_line == NULL)
     {
         return NULL;
     }
-    PriorityQueue current_queue_pointer = queue_head->next_in_line;
-    while(current_queue_pointer != NULL && queue_head->iterator != current_queue_pointer)
-    {
-        current_queue_pointer = current_queue_pointer->next_in_line;
-    }
-    if(current_queue_pointer == NULL || current_queue_pointer->next_in_line == NULL)
-    {
-        return NULL;
-    }
-    queue_head->iterator = current_queue_pointer->next_in_line;
+    queue_head->iterator = queue_head->iterator->next_in_line;
     return queue_head->iterator->pqe_element;
 }
