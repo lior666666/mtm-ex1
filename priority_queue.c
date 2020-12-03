@@ -1,9 +1,8 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "priority_queue.h"
-
-#define ELEMENTS_IN_EMPTY_QUEUE -1
 
 struct PriorityQueue_t
 {
@@ -25,7 +24,7 @@ struct PriorityQueue_t
   * return new element for the queue*/ 
 static PriorityQueue createNextInLine(PriorityQueue queue_head, PQElement element, PQElementPriority element_priority)
 {
-    PriorityQueue priority_queue = malloc(sizeof(PriorityQueue));
+    PriorityQueue priority_queue = malloc(sizeof(*priority_queue));
     if(priority_queue == NULL)
     {
         return NULL;
@@ -56,7 +55,7 @@ static PriorityQueue createNextInLine(PriorityQueue queue_head, PQElement elemen
  /** Internal function, to insert specified element to the queue
   * recieve the head of queue, and element to insert
   * insert the element based on it's priority*/ 
-static void insertElementPointer(PriorityQueue queue_head, PriorityQueue new_element_in_queue) // This internal function inserts a spesific fully allocated new element to our queue. 
+static void insertElementPointer(PriorityQueue queue_head, PriorityQueue new_element_in_queue) 
 {
     PriorityQueue previous_element_in_queue = queue_head;
     PriorityQueue current_element = queue_head->next_in_line;
@@ -72,13 +71,13 @@ static void insertElementPointer(PriorityQueue queue_head, PriorityQueue new_ele
         current_element = current_element->next_in_line;
     }
     //if there is no real elements in the queue OR new_priority is the lowest priority
-    current_element->next_in_line = new_element_in_queue;
+    queue_head->next_in_line = new_element_in_queue;
     new_element_in_queue->next_in_line = NULL;
 }
 
  /** Internal function, to destroy all elements in the queue
   * recieve the head of queue, the free functions*/ 
-void pqDestroyElements(PriorityQueue queue, FreePQElement free_pq_element, FreePQElementPriority free_pq_element_priority)
+static void pqDestroyElements(PriorityQueue queue, FreePQElement free_pq_element, FreePQElementPriority free_pq_element_priority)
 {
     while(queue != NULL)
     {
@@ -86,6 +85,7 @@ void pqDestroyElements(PriorityQueue queue, FreePQElement free_pq_element, FreeP
         free_pq_element_priority(queue->pq_element_priority);
         pqDestroyElements(queue->next_in_line, free_pq_element, free_pq_element_priority); //destroy all the list with recursion
         free(queue);
+        break;
     }
 }
 
@@ -97,7 +97,7 @@ PriorityQueue pqCreate(CopyPQElement copy_element, FreePQElement free_element, E
     {
         return NULL;
     }
-    PriorityQueue priority_queue = malloc(sizeof(PriorityQueue));
+    PriorityQueue priority_queue = malloc(sizeof(*priority_queue));
     if(priority_queue == NULL)
     {
         return NULL;
@@ -145,7 +145,7 @@ PriorityQueue pqCopy(PriorityQueue queue)
     while(temp_queue_pointer!=NULL) 
     {
         /**copying the next one in the queue*/
-        temp_copied_priority_queue_pointer->next_in_line = CreateNextInLine(copied_priority_queue, temp_queue_pointer->pqe_element, temp_queue_pointer->pq_element_priority);
+        temp_copied_priority_queue_pointer->next_in_line = createNextInLine(copied_priority_queue, temp_queue_pointer->pqe_element, temp_queue_pointer->pq_element_priority);
         if(temp_copied_priority_queue_pointer->next_in_line == NULL)
         {
             pqDestroy(copied_priority_queue);
@@ -166,7 +166,7 @@ int pqGetSize(PriorityQueue queue)
         counter++;
         queue = queue->next_in_line;
     }
-    return counter-ELEMENTS_IN_EMPTY_QUEUE; //return the length of the queue BUT without the head (that does not represent an element in the queue)
+    return counter-1; //return the length of the queue BUT without the head (that does not represent an element in the queue)
 }
 
 //*** 5 ***
