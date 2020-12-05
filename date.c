@@ -2,25 +2,29 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "date.h"
+
+#define DAYS_IN_MONTH 30
+#define MONTHS_IN_YEAR 12
+
 struct Date_t 
 {
     int day; 
     int month; 
     int year; 
 };
-// Is there an option of illigal year? 
+
 Date dateCreate(int day, int month, int year)
 {
-    if(day<1&&day>30)
+    if(day < 1 && day > DAYS_IN_MONTH)
     {
         return NULL;
     }
-    if(month<1&&month>12)
+    if(month < 1 && month > MONTHS_IN_YEAR)
     {
         return NULL;
     }
     Date new_date = malloc(sizeof(*new_date));
-    if(new_date ==NULL)
+    if(new_date == NULL)
     {
         return NULL;
     }
@@ -30,9 +34,17 @@ Date dateCreate(int day, int month, int year)
     return new_date;
 }
 
+void dateDestroy(Date date)
+{
+    if (date != NULL)
+    {
+        free(date);
+    }
+}
+
 Date dateCopy(Date date)
 {
-    if (date ==NULL)
+    if (date == NULL)
     {
         return NULL;
     }
@@ -47,25 +59,59 @@ Date dateCopy(Date date)
     return copy_date;
 }
 
+bool dateGet(Date date, int* day, int* month, int* year)
+{
+    if (date == NULL || day == NULL || month == NULL || year == NULL)
+    {
+        return false;
+    }
+    *day = date->day;
+    *month = date->month;
+    *year = date->year;
+    return true;
+}
+
 int dateCompare(Date date1, Date date2)
 {
     if(date1 == NULL || date2 == NULL)
     {
         return 0;
     }
-    if(date1->year==date2->year)
+    if(date1->year == date2->year)
     {
-        if(date1->month==date2->month)
+        if(date1->month == date2->month)
         {
             if (date1->day == date2->day)
             {
                return 0; 
             }
-            return date1->day-date2->day;  
+            return (date1->day)-(date2->day);  
         }
-        return date1->month-date2->month; 
+        return (date1->month)-(date2->month); 
     }
-    return date1->year-date2->year;
+    return (date1->year)-(date2->year);
 }
 
-
+void dateTick(Date date)
+{
+    if (date != NULL)
+    {
+        if (date->day != DAYS_IN_MONTH)
+        {
+            date->day++;
+        }
+        else   
+        {
+            date->day = 1;
+            if (date->month == MONTHS_IN_YEAR)
+            {
+                date->year++;
+                date->month = 1;
+            }
+            else
+            {
+                date->month++;
+            }
+        }
+    }
+}
