@@ -13,6 +13,7 @@ struct Date_t
     int year; 
 };
 
+//*** 1 ***
 Date dateCreate(int day, int month, int year)
 {
     if(day < 1 && day > DAYS_IN_MONTH)
@@ -34,6 +35,7 @@ Date dateCreate(int day, int month, int year)
     return new_date;
 }
 
+//*** 2 ***
 void dateDestroy(Date date)
 {
     if (date != NULL)
@@ -42,6 +44,7 @@ void dateDestroy(Date date)
     }
 }
 
+//*** 3 ***
 Date dateCopy(Date date)
 {
     if (date == NULL)
@@ -59,6 +62,7 @@ Date dateCopy(Date date)
     return copy_date;
 }
 
+//*** 4 ***
 bool dateGet(Date date, int* day, int* month, int* year)
 {
     if (date == NULL || day == NULL || month == NULL || year == NULL)
@@ -71,6 +75,7 @@ bool dateGet(Date date, int* day, int* month, int* year)
     return true;
 }
 
+//*** 5 ***
 int dateCompare(Date date1, Date date2)
 {
     if(date1 == NULL || date2 == NULL)
@@ -92,6 +97,7 @@ int dateCompare(Date date1, Date date2)
     return (date1->year)-(date2->year);
 }
 
+//*** 6 ***
 void dateTick(Date date)
 {
     if (date != NULL)
