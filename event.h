@@ -2,6 +2,7 @@
 #define EVENT_H_
 
 #include "priority_queue.h"
+#include "date.h"
 #include <stdbool.h>
 
 /** Type for defining the event */
@@ -12,11 +13,12 @@ typedef struct Event_t *Event;
 *
 * @param event_name - the day of the event.
 * @param event_id - the id of the event.
+* @param event_date - the date of the event.
 * @return
 * 	NULL - if allocation failed of one of args equales NULL. 
 * 	A new Event in case of success.
 */
-Event eventCreate(char* event_name, int event_id);
+Event eventCreate(char* event_name, int event_id, Date event_date);
 
 /**
 * eventDestroy: Deallocates an existing Event.
@@ -41,11 +43,12 @@ Event eventCopy(Event event);
 * @param event - Target Event.
 * @param event_name - the pointer to assign to name of the Event.
 * @param event_id - the pointer to assign to id of the Event.
+* @param event_date - the pointer to assign to date of the Event.
 *
 * @return
-*  the event neme and event id is assigned to the pointers. if the pointer is NULL, do nothing with this pointer. 
+*  the event neme and event id and event date is assigned to the pointers. if the pointer is NULL, do nothing with this pointer. 
 */
-void eventGet(Event event, char** event_name, int* event_id);
+void eventGet(Event event, char** event_name, int* event_id, Date event_date);
 
 /**
 * eventGetMembers: Returns the members list of the event. 
