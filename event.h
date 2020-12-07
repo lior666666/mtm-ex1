@@ -1,0 +1,81 @@
+#ifndef EVENT_H_
+#define EVENT_H_
+
+#include "priority_queue.h"
+#include <stdbool.h>
+
+/** Type for defining the event */
+typedef struct Event_t *Event;
+
+/**
+* eventCreate: Allocates a new event.
+*
+* @param event_name - the day of the event.
+* @param event_id - the id of the event.
+* @return
+* 	NULL - if allocation failed of one of args equales NULL. 
+* 	A new Event in case of success.
+*/
+Event eventCreate(char* event_name, int event_id);
+
+/**
+* eventDestroy: Deallocates an existing Event.
+*
+* @param event - Target event to be deallocated. 
+*/
+void eventDestroy(Event event);
+
+/**
+* eventCopy: Creates a copy of target Event.
+*
+* @param event - Target Event.
+* @return
+* 	NULL if a NULL was sent or a memory allocation failed.
+* 	An Event containing the same elements as event otherwise.
+*/
+Event eventCopy(Event event);
+
+/**
+* eventGet: Returns the name and the id number of the event. 
+*
+* @param event - Target Event.
+* @param event_name - the pointer to assign to name of the Event.
+* @param event_id - the pointer to assign to id of the Event.
+*
+* @return
+*  the event neme and event id is assigned to the pointers. if the pointer is NULL, do nothing with this pointer. 
+*/
+void eventGet(Event event, char** event_name, int* event_id);
+
+/**
+* eventGetMembers: Returns the members list of the event. 
+*
+* @param event - Target Event.
+*
+* @return
+* 	returns NULL in case the event is NULL.
+* 	Otherwise returns the queue of the members.
+*/
+PriorityQueue eventGetMembers(Event event);
+
+/**
+* eventCompareId: compares the id between 2 events. 
+* @param event1 - first Event to cpmpare.
+* @param event1 - second Event to compare with the first one.
+* @return
+* 		true - if the id's are equal. 
+*       false - if the id's are not the same or one of the events is NULL. 
+*/
+bool eventCompareId(Event event1, Event event2);
+
+/**
+* eventCompareId: compares the name between 2 events. 
+* @param event1 - first Event to cpmpare.
+* @param event1 - second Event to compare with the first one.
+* @return
+* 		true - if the name's are equal. 
+*       false - if the name's are not the same. 
+*/
+bool eventCompareName(Event event1, Event event2);
+
+#endif //EVENT_H_
