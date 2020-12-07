@@ -113,7 +113,7 @@ void eventDestroy(Event event)
 
 Event eventCopy(Event event)
 {
-    Event copy_event =  eventCreate(event->event_name, event->event_id);
+    Event copy_event =  eventCreate(event->event_name, event->event_id,event->event_date);
     if(copy_event==NULL)
     {
         return NULL;
