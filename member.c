@@ -3,12 +3,9 @@
 #include <stdlib.h>
 #include "member.h"
 
-#define FIRST_MEMBER_EVENTS_CONTER_IS_GREATER 1
-#define SECOND_MEMBER_EVENTS_CONTER_IS_GREATER -1
-
 struct Member_t 
 {
-    int name;
+    char* name;
     int id;
     int associated_events_counter;
 };
@@ -25,7 +22,13 @@ Member memberCreate(char* name, int id)
     {
         return NULL;
     }
-    new_member->name = name;
+    new_member->name = malloc(strlen(name)+1);
+    if(new_member->name == NULL)
+    {
+        free(new_member);
+        return NULL;
+    }
+    strcpy(new_member->name, name);
     new_member->id = id;
     new_member->associated_events_counter = 0;
     return new_member;
@@ -36,6 +39,7 @@ void memberDestroy(Member member)
 {
     if (member != NULL)
     {
+        free(member->name);
         free(member);
     }
 }
@@ -47,13 +51,11 @@ Member memberCopy(Member member)
     {
         return NULL;
     }
-    Member copy_member = malloc(sizeof(*copy_member));
+    Member copy_member = memberCreate(member->name, member->id);
     if(copy_member == NULL)
     {
         return NULL;
     }
-    copy_member->name = member->name;
-    copy_member->id = member->id;
     copy_member->associated_events_counter = member->associated_events_counter;
     return copy_member;
 }
@@ -75,7 +77,7 @@ bool compareMembersById(Member first_member, Member second_member)
     {
         return NULL;
     }
-    return (first_member->id == second_member->id);
+    return first_member->id == second_member->id;
 }
 
 //*** 6 ***
@@ -85,15 +87,7 @@ int compareMembersByEventsCounter(Member first_member, Member second_member)
     {
         return NULL;
     }
-    if (first_member->associated_events_counter > second_member->associated_events_counter)
-    {
-        return FIRST_MEMBER_EVENTS_CONTER_IS_GREATER;
-    }
-    else if (first_member->associated_events_counter < second_member->associated_events_counter)
-    {
-        return SECOND_MEMBER_EVENTS_CONTER_IS_GREATER;
-    }
-    return 0;
+    return first_member->associated_events_counter - second_member->associated_events_counter;
 }
 
 //*** 7 ***
