@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "member.h"
 
+#define NEGATIVE_COUNTER -1
+#define NULL_ARGUMENT -1
+
 struct Member_t 
 {
     char* name;
@@ -61,83 +64,56 @@ Member memberCopy(Member member)
 }
 
 //*** 4 ***
-int eventsCounterCopy(int associated_events_counter)
-{
-    if (associated_events_counter == NULL || associated_events_counter < 0)
-    {
-        return NULL;
-    }
-    return associated_events_counter;
-}
-
-//*** 5 ***
 bool compareMembersById(Member first_member, Member second_member)
 {
     if (first_member == NULL || second_member == NULL)
     {
-        return NULL;
+        return false;
     }
     return first_member->id == second_member->id;
 }
 
-//*** 6 ***
+//*** 5 ***
 int compareMembersByEventsCounter(Member first_member, Member second_member)
 {
     if (first_member == NULL || second_member == NULL)
     {
-        return NULL;
+        return 0;
     }
     return first_member->associated_events_counter - second_member->associated_events_counter;
 }
 
+//*** 6 ***
+void memberGet(Member member, char* name, int* id, int* associated_events_counter)
+{
+    if(member != NULL)
+    {
+        if(name != NULL)
+        {
+            *name = member->name;
+        }
+        if(id != NULL)
+        {
+            *id = member->id; 
+        }
+        if(associated_events_counter != NULL)
+        {
+            *associated_events_counter = member->associated_events_counter; 
+        }
+    }
+}
+
 //*** 7 ***
-char* getMemberName(Member member)
+int changeMemberEventsCounter(Member member, int change_by)
 {
-    if (member == NULL)
+    if (member == NULL || member->associated_events_counter == NULL)
     {
-        return NULL;
+        return NULL_ARGUMENT;
     }
-    return member->name;
-}
-
-//*** 8 ***
-int getMemberId(Member member)
-{
-    if (member == NULL)
+    member->associated_events_counter += change_by;
+    if (member->associated_events_counter < 0)
     {
-        return NULL;
+        return NEGATIVE_COUNTER;
     }
-    return member->id;
-}
-
-//*** 9 ***
-int getMemberEventsCounter(Member member)
-{
-    if (member == NULL)
-    {
-        return NULL;
-    }
-    return member->associated_events_counter;
-}
-
-//*** 10 ***
-int increaseMemberEventsCounter(Member member)
-{
-    if (member == NULL)
-    {
-        return NULL;
-    }
-    member->associated_events_counter++;
-    return member->associated_events_counter;
-}
-
-//*** 11 ***
-int decreaseMemberEventsCounter(Member member)
-{
-    if (member == NULL || member->associated_events_counter == 0)
-    {
-        return NULL;
-    }
-    member->associated_events_counter--;
     return member->associated_events_counter;
 }

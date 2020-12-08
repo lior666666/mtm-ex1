@@ -35,22 +35,12 @@ void memberDestroy(Member member);
 Member memberCopy(Member member);
 
 /**
-* eventsCounterCopy: Creates a copy of the associated events counter of the target Member.
-*
-* @param associated_events_counter - Target associated events counter.
-* @return
-* 	NULL if a NULL was sent or a negative integer was sent.
-* 	A copy of the associated events counter that sent otherwise.
-*/
-int eventsCounterCopy(int associated_events_counter);
-
-/**
 * compareMembersById: identify equal members by comparing the target member's ID.
 *
 * @param first_member - First target Member.
 * @param second_member - Second target Member.
 * @return
-* 	NULL if a NULL was sent.
+* 	false if a NULL was sent.
 * 	true if they're equal, false otherwise.
 */
 bool compareMembersById(Member first_member, Member second_member);
@@ -61,7 +51,7 @@ bool compareMembersById(Member first_member, Member second_member);
 * @param first_member - First target Member.
 * @param second_member - Second target Member.
 * @return
-* 	NULL if a NULL was sent.
+* 	0 if a NULL was sent (user must check that NULL does not send).
 * 	A positive integer if the first member associating with more events.
 * 	0 if they're associating with the same amount of events;
 *	A negative integer if the second member associating with more events.
@@ -69,53 +59,27 @@ bool compareMembersById(Member first_member, Member second_member);
 int compareMembersByEventsCounter(Member first_member, Member second_member);
 
 /**
-* getMemberName: returns the name of the target member.
+* memberGet: Returns the name, id number and the associated events counter of the member. 
 *
 * @param member - Target Member.
+* @param name - the pointer to assign to name of the Member.
+* @param id - the pointer to assign to id of the Member.
+* @param associated_events_counter - the pointer to assign to associated events counter of the Member.
+*
 * @return
-* 	NULL if a NULL was sent.
-* 	the name of the member otherwise.
+*  the member name, id and associated events counter are assigned to the pointers. if the pointer is NULL, do nothing with this pointer. 
 */
-char* getMemberName(Member member);
+void memberGet(Member member, char* name, int* id, int* associated_events_counter);
 
 /**
-* getMemberId: returns the id of the target member.
+* changeMemberEventsCounter: increases or decrease the associated events counter of the target Member by change_by, and returns it.
 *
 * @param member - Target Member.
+* @param change_by - the change for the counter.
 * @return
-* 	NULL if a NULL was sent.
-* 	the id of the member otherwise.
-*/
-int getMemberId(Member member);
-
-/**
-* getMemberEventsCounter: returns the associated events counter of the target Member.
-*
-* @param member - Target Member.
-* @return
-* 	NULL if a NULL was sent.
-* 	the associated events counter of the member otherwise.
-*/
-int getMemberEventsCounter(Member member);
-
-/**
-* increaseMemberEventsCounter: increases the associated events counter of the target Member by 1, and returns it.
-*
-* @param member - Target Member.
-* @return
-* 	NULL if a NULL was sent.
+* 	-1 if a NULL was sent or there is negative counter after the operation.
 * 	the update associated events counter of the member otherwise.
 */
-int increaseMemberEventsCounter(Member member);
-
-/**
-* decreaseMemberEventsCounter: decreases the associated events counter of the target Member by 1, and returns it.
-*
-* @param member - Target Member.
-* @return
-* 	NULL if a NULL was sent or the current associated events counter is zero.
-* 	the update associated events counter of the member otherwise.
-*/
-int decreaseMemberEventsCounter(Member member);
+int changeMemberEventsCounter(Member member, int change_by)
 
 #endif //MEMBER_H_

@@ -5,7 +5,8 @@
 #include <string.h>
 #include "date.h"
 #include "member.h"
-#include "priority_queue.h" //remember to remove
+#include "priority_queue.h"
+//remember to remove "priority_queue.h"
 
 struct Event_t 
 {
@@ -105,10 +106,7 @@ void eventDestroy(Event event)
 {
     if(event != NULL)
     {
-        if(event->event_name != NULL)
-        {
-            free(event->event_name);
-        }
+        free(event->event_name);
         dateDestroy(event->event_date);
         pqDestroy(event->event_members);
         free(event);
@@ -135,7 +133,7 @@ Event eventCopy(Event event)
     return event_copy; 
 }
 
-void getEvent(Event event, char* event_name, int* event_id, Date event_date)
+void eventGet(Event event, char* event_name, int* event_id, Date event_date)
 {
     if(event != NULL)
     {
@@ -152,33 +150,6 @@ void getEvent(Event event, char* event_name, int* event_id, Date event_date)
             event_date = event->event_date; 
         }
     }
-}
-
-char* getEventName(Event event)
-{
-    if (event == NULL)
-    {
-        return NULL;
-    }
-    return event->event_name;
-}
-
-int getEventId(Event event)
-{
-    if (event == NULL)
-    {
-        return NULL;
-    }
-    return event->event_id;
-}
-
-Date getEventName(Event event)
-{
-    if (event == NULL)
-    {
-        return NULL;
-    }
-    return event->event_date;
 }
 
 PriorityQueue eventGetMembers(Event event)

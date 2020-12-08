@@ -5,7 +5,8 @@
 #include "event.h"
 #include "date.h"
 #include "member.h"
-#include "priority_queue.h" //remember to remove
+#include "priority_queue.h"
+//remember to remove "priority_queue.h"
 
 struct EventManager_t 
 {
