@@ -69,7 +69,7 @@ PriorityQueue eventGetMembers(Event event);
 * 		true - if the id's are equal. 
 *       false - if the id's are not the same or one of the events is NULL. 
 */
-bool eventCompareId(Event first_event, Event second_event)
+bool eventCompareId(Event first_event, Event second_event);
 
 /**
 * eventCompareName: compares the name between 2 events. 
