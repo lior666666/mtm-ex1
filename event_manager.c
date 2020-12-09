@@ -163,32 +163,32 @@ EventManagerResult emAddEventByDate(EventManager em, char* event_name, Date date
     {
         return EM_INVALID_EVENT_ID;
     }
-    Event event_element = (Event) pqGetFirst(em->events); // not sure if casting is required. 
-    char* event_element_name;  // not sure if we allowed to it. 
-    Date element_date;  // not sure if we allowed to it. 
-    while(event_element != NULL)
-    {
-        eventGet(event_element, event_element_name, NULL, element_date);
-        if(eventCompareName(event_element, event_element_name, event_name) && dateCompare(element_date, date) == 0)
-        {
-            return EM_EVENT_ALREADY_EXISTS; 
-        }
-        event_element = (Event) pqGetNext(em->events); // not sure if casting is required. 
-    }
-    event_element = eventCreate(event_name, event_id, date);
-    if(event_element == NULL)
+    Event event_element_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required. 
+    Event event_element_temp = eventCreate(event_name, event_id, date);
+    if(event_element_temp == NULL)
     {
         return EM_OUT_OF_MEMORY; 
     }
-    if(pqContains(em->events, event_element))
+    while(event_element_pointer != NULL)
     {
+        if(eventCompareName(event_element_pointer, event_element_temp) && eventCompareDate(event_element_pointer, event_element_temp) == 0)
+        {
+            eventDestroy(event_element_temp);
+            return EM_EVENT_ALREADY_EXISTS; 
+        }
+        event_element_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+    }
+    if(pqContains(em->events, event_element_temp))
+    {
+        eventDestroy(event_element_temp);
         return EM_EVENT_ID_ALREADY_EXISTS; 
     }
-    if(pqInsert(em->events, event_element, date) == PQ_OUT_OF_MEMORY)
+    if(pqInsert(em->events, event_element_temp, date) == PQ_OUT_OF_MEMORY)
     {
-       eventDestroy(event_element)
+       eventDestroy(event_element_temp);
        return EM_OUT_OF_MEMORY; 
     }
+    eventDestroy(event_element_temp);
     return EM_SUCCESS; 
 }
 
@@ -216,11 +216,11 @@ EventManagerResult emRemoveEvent(EventManager em, int event_id)
     if(pqRemoveElement(em->events, temp_event) == PQ_ELEMENT_DOES_NOT_EXISTS)
     {
         dateDestroy(fake_date);
-        eventDestroy(temp_event)
-        return EM_ELEMENT_NOT_EXISTS
+        eventDestroy(temp_event);
+        return EM_EVENT_NOT_EXISTS;
     }
     dateDestroy(fake_date);
-    eventDestroy(temp_event)
+    eventDestroy(temp_event);
     return EM_SUCCESS; 
 }
 
