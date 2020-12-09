@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include "event.h"
 #include <string.h>
+#include "priority_queue.h"
 #include "date.h"
 #include "member.h"
-#include "priority_queue.h"
-//remember to remove "priority_queue.h"
 
-struct Event_t 
+
+struct Event_t
 {
     int event_id; 
     char* event_name;
