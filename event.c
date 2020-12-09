@@ -6,6 +6,7 @@
 #include "date.h"
 #include "member.h"
 #include "priority_queue.h"
+//remember to remove "priority_queue.h"
 
 struct Event_t 
 {
@@ -15,40 +16,38 @@ struct Event_t
     PriorityQueue event_members; 
 };
 
-static PQElement copyMemberGeneric(PQElement generic_memmber)
+static PQElement memberCopyGeneric(PQElement generic_member)
 {
-    if(generic_memmber == NULL)
+    if(generic_member == NULL)
     {
         return NULL;
     }
-    Member copy_member = memberCopy(generic_memmber);
-    if(copy_member ==NULL)
+    Member member_copy = memberCopy(generic_member);
+    if(member_copy == NULL)
     {
         return NULL;
     }
-    return copy_member; 
+    return member_copy; 
 }
 
-static void freeGenericMember(PQElement gemeric_memeber)
+static void memberDestroyGeneric(PQElement generic_member)
 {
-    memberDestroy(gemeric_memeber);
+    memberDestroy(generic_member);
 }
 
-static bool equalGenericMember(PQElement generic_member1, PQElement generic_member2)
+static bool equalGenericMember(PQElement first_generic_member, PQElement second_generic_member)
 {
-    if(compareMembersById(generic_member1, generic_member2)==0)
-        return true;
-    return false; 
+    return compareMembersById(first_generic_member, second_generic_member) == 0;
 }
 
 static PQElementPriority copyIdMemberGeneric(PQElementPriority generic_id)
 {
-   if(generic_id == NULL)
+    if(generic_id == NULL)
     {
         return NULL;
     }
     int *copy_id = malloc(sizeof(*copy_id));
-    if(copy_id ==NULL)
+    if(copy_id == NULL)
     {
         return NULL;
     }
@@ -56,18 +55,19 @@ static PQElementPriority copyIdMemberGeneric(PQElementPriority generic_id)
     return copy_id; 
 }
 
-static void freeGenericId(PQElementPriority gemeric_id)
+static void freeIdGeneric(PQElementPriority generic_id)
 {
     return;
 }
 
-static int compareGenericMemberPriorityId(PQElementPriority member_id_1, PQElementPriority member_id_2)
+static int compareMembersIdGeneric(PQElementPriority first_member_id, PQElementPriority second_member_id)
 {
-    return *(int *) member_id_1 - *(int *) member_id_2;
+    return *(int *) first_member_id - *(int *) second_member_id;
 }
+
 Event eventCreate(char* event_name, int event_id, Date event_date)
 {
-    if(event_name ==NULL || event_date == NULL)
+    if(event_name == NULL || event_id == NULL || event_date == NULL)
     {
         return NULL;
     }
@@ -82,30 +82,32 @@ Event eventCreate(char* event_name, int event_id, Date event_date)
         free(new_event);
         return NULL;
     }
-    new_event->event_name = malloc(strlen(event_name));
+    new_event->event_name = malloc(strlen(event_name)+1);
     if(new_event->event_name = NULL)
     {
+        dateDestroy(new_event->event_date);
         free(new_event); 
         return NULL;
     }
     strcpy(new_event->event_name, event_name);
     new_event->event_id = event_id;
-    new_event->event_members = pqCreate(copyMemberGeneric, freeGenericMember, equalGenericMember, copyIdMemberGeneric, freeGenericId, compareGenericMemberPriorityId);
+    new_event->event_members = pqCreate(memberCopyGeneric, memberDestroyGeneric, equalGenericMember, copyIdMemberGeneric, freeIdGeneric, compareMembersIdGeneric);
     if(new_event->event_members == NULL)
     {
+        dateDestroy(new_event->event_date);
+        free(new_event->event_name);
         free(new_event); 
         return NULL;
     }
     return new_event; 
 }
+
 void eventDestroy(Event event)
 {
     if(event != NULL)
     {
-        if(event->event_name!=NULL)
-        {
-            free(event->event_name);
-        }
+        free(event->event_name);
+        dateDestroy(event->event_date);
         pqDestroy(event->event_members);
         free(event);
     }
@@ -113,21 +115,25 @@ void eventDestroy(Event event)
 
 Event eventCopy(Event event)
 {
-    Event copy_event =  eventCreate(event->event_name, event->event_id,event->event_date);
-    if(copy_event==NULL)
+    if (event == NULL)
     {
         return NULL;
     }
-    copy_event->event_members = pqCopy(event->event_members);
-    if(copy_event->event_members==NULL)
+    Event event_copy = eventCreate(event->event_name, event->event_id, event->event_date);
+    if(event_copy == NULL)
     {
-        eventDestroy(copy_event);
+        return NULL;
+    }
+    event_copy->event_members = pqCopy(event->event_members);
+    if(event_copy->event_members == NULL)
+    {
+        eventDestroy(event_copy);
         return NULL;  
     }
-    return copy_event; 
+    return event_copy; 
 }
 
-void eventGet(Event event, char** event_name, int* event_id, Date event_date)
+void eventGet(Event event, char* event_name, int* event_id, Date event_date)
 {
     if(event != NULL)
     {
@@ -146,7 +152,6 @@ void eventGet(Event event, char** event_name, int* event_id, Date event_date)
     }
 }
 
-
 PriorityQueue eventGetMembers(Event event)
 {
     if(event == NULL)
@@ -156,33 +161,20 @@ PriorityQueue eventGetMembers(Event event)
     return event->event_members; 
 }
 
-
-bool eventCompareId(Event event1, Event event2)
+bool eventCompareId(Event first_event, Event second_event)
 {
-    if(event1 == NULL || event2 == NULL)
+    if(first_event == NULL || second_event == NULL)
     {
         return false; 
     }
-    if(event1->event_id == event2->event_id)
-    {
-        return true; 
-    }
-    return false; 
+    return first_event->event_id == second_event->event_id;
 }
 
-
-bool eventCompareName(Event event1, Event event2)
+bool eventCompareName(Event first_event, Event second_event)
 {
-    if(event1 == NULL || event2 == NULL)
+    if(first_event == NULL || second_event == NULL)
     {
         return false; 
     }
-     if(strcmp(event1->event_name, event2->event_name)==0)
-    {
-        return true; 
-    }
-    return false;
+    return strcmp(first_event->event_name, second_event->event_name) == 0;
 }
-
-
-

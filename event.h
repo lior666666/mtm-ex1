@@ -48,7 +48,7 @@ Event eventCopy(Event event);
 * @return
 *  the event neme and event id and event date is assigned to the pointers. if the pointer is NULL, do nothing with this pointer. 
 */
-void eventGet(Event event, char** event_name, int* event_id, Date event_date);
+void eventGet(Event event, char* event_name, int* event_id, Date event_date);
 
 /**
 * eventGetMembers: Returns the members list of the event. 
@@ -63,22 +63,22 @@ PriorityQueue eventGetMembers(Event event);
 
 /**
 * eventCompareId: compares the id between 2 events. 
-* @param event1 - first Event to cpmpare.
-* @param event1 - second Event to compare with the first one.
+* @param first_event - first Event to cpmpare.
+* @param second_event - second Event to compare with the first one.
 * @return
 * 		true - if the id's are equal. 
 *       false - if the id's are not the same or one of the events is NULL. 
 */
-bool eventCompareId(Event event1, Event event2);
+bool eventCompareId(Event first_event, Event second_event);
 
 /**
-* eventCompareId: compares the name between 2 events. 
-* @param event1 - first Event to cpmpare.
-* @param event1 - second Event to compare with the first one.
+* eventCompareName: compares the name between 2 events. 
+* @param first_event - first Event to cpmpare.
+* @param second_event - second Event to compare with the first one.
 * @return
 * 		true - if the name's are equal. 
 *       false - if the name's are not the same. 
 */
-bool eventCompareName(Event event1, Event event2);
+bool eventCompareName(Event first_event, Event second_event);
 
 #endif //EVENT_H_
