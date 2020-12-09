@@ -5,6 +5,7 @@
 
 #define NEGATIVE_COUNTER -1
 #define NULL_ARGUMENT -1
+#define SUCCESS 0
 
 struct Member_t 
 {
@@ -113,7 +114,8 @@ int changeMemberEventsCounter(Member member, int change_by)
     member->associated_events_counter += change_by;
     if (member->associated_events_counter < 0)
     {
+        member->associated_events_counter = 0; 
         return NEGATIVE_COUNTER;
     }
-    return member->associated_events_counter;
+    return SUCCESS;
 }

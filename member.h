@@ -72,13 +72,13 @@ int compareMembersByEventsCounter(Member first_member, Member second_member);
 void memberGet(Member member, char* name, int* id, int* associated_events_counter);
 
 /**
-* changeMemberEventsCounter: increases or decrease the associated events counter of the target Member by change_by, and returns it.
+* changeMemberEventsCounter: increases or decrease the associated events counter of the target Member by change_by.
 *
 * @param member - Target Member.
 * @param change_by - the change for the counter.
 * @return
 * 	-1 if a NULL was sent or there is negative counter after the operation.
-* 	the update associated events counter of the member otherwise.
+* 	zero otherwise.
 */
 int changeMemberEventsCounter(Member member, int change_by)
 
