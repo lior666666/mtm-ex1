@@ -179,4 +179,12 @@ bool eventCompareName(Event first_event, Event second_event)
     return strcmp(first_event->event_name, second_event->event_name) == 0;
 }
 
+int eventCompareDate(Event first_event, Event second_event)
+{
+    if(first_event == NULL || second_event == NULL)
+    {
+        return 0; 
+    }
+    return dateCompare(first_event->event_date, second_event->event_date);
+}
 

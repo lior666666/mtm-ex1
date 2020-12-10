@@ -81,4 +81,15 @@ bool eventCompareId(Event first_event, Event second_event);
 */
 bool eventCompareName(Event first_event, Event second_event);
 
+/**
+* eventCompareDate: compares the date between 2 events. 
+* @param first_event - first Event to cpmpare.
+* @param second_event - second Event to compare with the first one.
+* @return
+* 		A negative integer if the date of the firstevent occurs first.
+* 		0 if they're equal or one of the dates is NULL or one of the events is NULL.
+*		A positive integer if the date of the firstevent arrives after the date of the second event.
+*/
+int eventCompareDate(Event first_event, Event second_event);
+
 #endif //EVENT_H_
