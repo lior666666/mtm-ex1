@@ -38,7 +38,7 @@ void eventDestroy(Event event);
 Event eventCopy(Event event);
 
 /**
-* eventGet: Returns the name and the id number of the event. 
+* eventGet: Returns the name, id number and the date of the event. 
 *
 * @param event - Target Event.
 * @param event_name - the pointer to assign to name of the Event.

@@ -102,6 +102,77 @@ static int compareDateGeneric(PQElementPriority first_date, PQElementPriority se
 }
 //*** <--
 
+//find the event id in the queue, if exists, and copy this event, or create new one by the arguments
+static Event copyExistEventById(EventManager em, char* event_name, int event_id, Date event_date)
+{
+    char* current_name = NULL;
+    int* current_id = 0;
+    Date current_date = NULL;
+    Event event_element_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
+    while(event_element_pointer != NULL)
+    {
+        eventGet(event_element_pointer, current_name, current_id, current_date);
+        if(current_id == event_id)
+        {
+            return eventCreate(current_name, event_id, current_date);
+        }
+        event_element_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+    }
+    return eventCreate(event_name, event_id, event_date);
+}
+
+//check if there is an event with the same name on the same date
+static bool isEqualEventsByNameAndDate(EventManager em, Event checking_event)
+{
+    Event event_element_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
+    while(event_element_pointer != NULL)
+    {
+        if(eventCompareName(event_element_pointer, checking_event) && eventCompareDate(event_element_pointer, checking_event) == 0)
+        {
+            return true;
+        }
+        event_element_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+    }
+    return false;
+}
+
+//create tmp event by Id
+static Event createTmpEvent(int event_id)
+{
+    Date tmp_date = dateCreate(1,1,1);
+    if(tmp_date == NULL)
+    {
+        return NULL;
+    }
+    Event temp_event = eventCreate("tmp-event", event_id, tmp_date);
+    dateDestroy(tmp_date);
+    return temp_event;
+}
+
+//update the event counter of the member + update priority
+static EventManagerResult updateMemberEventsCounterBy(EventManager em, Member tmp_member, int change_by)
+{
+    Member member_element_pointer = (Member)pqGetFirst(em->exist_members); // not sure if casting is required.
+    while(member_element_pointer != NULL)
+    {
+        if(compareMembersById(member_element_pointer, tmp_member))
+        {
+            break;
+        }
+        member_element_pointer = (Member) pqGetNext(em->exist_members); // not sure if casting is required. 
+    }
+    int *new_member_associated_events_counter;
+    int *old_member_associated_events_counter;
+    memberGet(member_element_pointer, NULL, NULL, old_member_associated_events_counter);
+    changeMemberEventsCounter(member_element_pointer, change_by);
+    memberGet(member_element_pointer, NULL, NULL, new_member_associated_events_counter);
+    if(pqChangePriority(em->exist_members, member_element_pointer, &old_member_associated_events_counter, &new_member_associated_events_counter) == PQ_OUT_OF_MEMORY)
+    {
+        return EM_OUT_OF_MEMORY;  
+    }
+    return EM_SUCCESS; 
+}
+
 //*** 1 ***
 EventManager createEventManager(Date date)
 {
@@ -152,7 +223,7 @@ void destroyEventManager(EventManager em)
 //*** 3 ***
 EventManagerResult emAddEventByDate(EventManager em, char* event_name, Date date, int event_id)
 {
-    if(em == NULL || event_name == NULL || date == NULL || event_id == NULL)
+    if(em == NULL || event_name == NULL || date == NULL)
     {
         return EM_NULL_ARGUMENT;
     }
@@ -164,20 +235,15 @@ EventManagerResult emAddEventByDate(EventManager em, char* event_name, Date date
     {
         return EM_INVALID_EVENT_ID;
     }
-    Event event_element_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
     Event new_event_element = eventCreate(event_name, event_id, date);
     if(new_event_element == NULL)
     {
         return EM_OUT_OF_MEMORY; 
     }
-    while(event_element_pointer != NULL)
+    if(isEqualEventsByNameAndDate(em, new_event_element))
     {
-        if(eventCompareName(event_element_pointer, new_event_element) && eventCompareDate(event_element_pointer, new_event_element) == 0)
-        {
-            eventDestroy(new_event_element);
-            return EM_EVENT_ALREADY_EXISTS; 
-        }
-        event_element_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+        eventDestroy(new_event_element);
+        return EM_EVENT_ALREADY_EXISTS; 
     }
     if(pqContains(em->events, new_event_element))
     {
@@ -196,7 +262,7 @@ EventManagerResult emAddEventByDate(EventManager em, char* event_name, Date date
 //*** 4 ***
 EventManagerResult emAddEventByDiff(EventManager em, char* event_name, int days, int event_id)
 {
-    if (em == NULL || em->start_date == NULL || event_name == NULL || days == NULL || event_id == NULL)
+    if (em == NULL || event_name == NULL)
     {
         return EM_NULL_ARGUMENT;
     }
@@ -230,24 +296,211 @@ EventManagerResult emRemoveEvent(EventManager em, int event_id)
     {
         return EM_INVALID_EVENT_ID;
     }
-    Date fake_date = dateCreate(1,1,1);
-    if(fake_date == NULL)
-    {
-        return EM_OUT_OF_MEMORY;
-    }
-    Event temp_event = eventCreate("fake event", event_id, fake_date);
+    Event temp_event = createTmpEvent(event_id);
     if(temp_event == NULL)
     {
-        dateDestroy(fake_date);
         return EM_OUT_OF_MEMORY;
     }
     if(pqRemoveElement(em->events, temp_event) == PQ_ELEMENT_DOES_NOT_EXISTS)
     {
-        dateDestroy(fake_date);
         eventDestroy(temp_event);
         return EM_EVENT_NOT_EXISTS;
     }
-    dateDestroy(fake_date);
     eventDestroy(temp_event);
-    return EM_SUCCESS; 
+    return EM_SUCCESS;
+}
+
+//*** 6 ***
+EventManagerResult emChangeEventDate(EventManager em, int event_id, Date new_date)
+{
+    if (em == NULL || new_date == NULL)
+    {
+        return EM_NULL_ARGUMENT;
+    }
+    if(dateCompare(new_date, em->start_date) < 0)
+    {
+        return EM_INVALID_DATE;
+    }
+    if(event_id < 0)
+    {
+        return EM_INVALID_EVENT_ID;
+    }
+    Event temp_event = copyExistEventById(em, "tmp-event", event_id, new_date);
+    if(temp_event == NULL)
+    {
+        return EM_OUT_OF_MEMORY;
+    }
+    if(!pqContains(em->events, temp_event))
+    {
+        eventDestroy(temp_event);
+        return EM_EVENT_ID_NOT_EXISTS;
+    }
+    if(isEqualEventsByNameAndDate(em, temp_event))
+    {
+        eventDestroy(temp_event);
+        return EM_EVENT_ALREADY_EXISTS; 
+    }
+    eventDestroy(temp_event);
+    return EM_SUCCESS;
+}
+
+//*** 7 ***
+EventManagerResult emAddMember(EventManager em, char* member_name, int member_id)
+{
+    if(em == NULL || member_name == NULL)
+    {
+        return EM_NULL_ARGUMENT;
+    }
+    if(member_id < 0)
+    {
+        return EM_INVALID_MEMBER_ID;
+    }
+    Member new_member = memberCreate(member_name, member_id);
+    if(new_member == NULL)
+    {
+        return EM_OUT_OF_MEMORY;
+    }
+    if(pqContains(em->exist_members, new_member))
+    {
+        memberDestroy(new_member);
+        return EM_MEMBER_ID_ALREADY_EXISTS;
+    }
+    int associated_events_counter = 0;
+    if(pqInsert(em->exist_members, new_member, &associated_events_counter) == PQ_OUT_OF_MEMORY)
+    {
+        memberDestroy(new_member);
+        return EM_OUT_OF_MEMORY;
+    }
+    memberDestroy(new_member);
+    return EM_SUCCESS;
+}
+
+//*** 8 ***
+EventManagerResult emAddMemberToEvent(EventManager em, int member_id, int event_id)
+{
+    if(em == NULL)
+    {
+        return EM_NULL_ARGUMENT;
+    }
+    if(event_id < 0)
+    {
+        return EM_INVALID_EVENT_ID;
+    }
+    if(member_id < 0)
+    {
+        return EM_INVALID_MEMBER_ID;
+    }
+    Event tmp_event = createTmpEvent(event_id);
+    if(tmp_event == NULL)
+    {
+        return EM_OUT_OF_MEMORY; 
+    }
+    if(!pqContains(em->events, tmp_event))
+    {
+        destroyEvent(tmp_event);
+        return EM_EVENT_ID_NOT_EXISTS;
+    }
+    
+    //take this event from the queue
+    Event event_element_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
+    while(event_element_pointer != NULL)
+    {
+        if(eventCompareId(event_element_pointer, tmp_event))
+        {
+            break;
+        }
+        event_element_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+    }
+    destroyEvent(tmp_event);
+
+    Member tmp_member = memberCreate("tmp-member", member_id);
+    if(tmp_member == NULL)
+    {
+        return EM_OUT_OF_MEMORY; 
+    }
+    if(!pqContains(em->exist_members, tmp_member))
+    {
+        memberDestroy(tmp_member);
+        return EM_MEMBER_ID_NOT_EXISTS;
+    }
+    if(pqContains(eventGetMembers(event_element_pointer), tmp_member))
+    {
+        memberDestroy(tmp_member);
+        return EM_EVENT_AND_MEMBER_ALREADY_LINKED;
+    }
+    if(updateMemberEventsCounterBy(em, tmp_member, 1) == EM_OUT_OF_MEMORY)
+    {
+        memberDestroy(tmp_member);
+        return EM_OUT_OF_MEMORY;
+    }
+    if(pqInsert(eventGetMembers(event_element_pointer), tmp_member, member_id) == PQ_OUT_OF_MEMORY)
+    {
+        memberDestroy(tmp_member);
+        return EM_OUT_OF_MEMORY;
+    }
+    memberDestroy(tmp_member);
+    return EM_SUCCESS;
+}
+
+//*** 9 ***
+EventManagerResult emRemoveMemberFromEvent (EventManager em, int member_id, int event_id)
+{
+    if(em == NULL)
+    {
+        return EM_NULL_ARGUMENT;
+    }
+    if(event_id < 0)
+    {
+        return EM_INVALID_EVENT_ID;
+    }
+    if(member_id < 0)
+    {
+        return EM_INVALID_MEMBER_ID;
+    }
+    Event tmp_event = createTmpEvent(event_id);
+    if(tmp_event == NULL)
+    {
+        return EM_OUT_OF_MEMORY; 
+    }
+    if(!pqContains(em->events, tmp_event))
+    {
+        destroyEvent(tmp_event);
+        return EM_EVENT_ID_NOT_EXISTS;
+    }
+    
+    //take this event from the queue
+    Event event_element_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
+    while(event_element_pointer != NULL)
+    {
+        if(eventCompareId(event_element_pointer, tmp_event))
+        {
+            break;
+        }
+        event_element_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+    }
+    destroyEvent(tmp_event);
+
+    Member tmp_member = memberCreate("tmp-member", member_id);
+    if(tmp_member == NULL)
+    {
+        return EM_OUT_OF_MEMORY; 
+    }
+    if(!pqContains(em->exist_members, tmp_member))
+    {
+        memberDestroy(tmp_member);
+        return EM_MEMBER_ID_NOT_EXISTS;
+    }
+    if(!pqContains(eventGetMembers(event_element_pointer), tmp_member))
+    {
+        memberDestroy(tmp_member);
+        return EM_EVENT_AND_MEMBER_NOT_LINKED;
+    }
+    if(updateMemberEventsCounterBy(em, tmp_member, -1) == EM_OUT_OF_MEMORY)
+    {
+        memberDestroy(tmp_member);
+        return EM_OUT_OF_MEMORY;
+    }
+    pqRemoveElement(eventGetMembers(event_element_pointer), tmp_member);
+    memberDestroy(tmp_member);
+    return EM_SUCCESS;
 }
