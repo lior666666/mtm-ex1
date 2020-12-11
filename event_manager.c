@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "event.h"
 #include "date.h"
@@ -108,15 +109,15 @@ static Event copyExistEventById(EventManager em, char* event_name, int event_id,
     char* current_name = NULL;
     int* current_id = 0;
     Date current_date = NULL;
-    Event event_element_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
-    while(event_element_pointer != NULL)
+    Event event_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
+    while(event_pointer != NULL)
     {
-        eventGet(event_element_pointer, current_name, current_id, current_date);
+        eventGet(event_pointer, current_name, current_id, current_date);
         if(current_id == event_id)
         {
             return eventCreate(current_name, event_id, current_date);
         }
-        event_element_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+        event_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
     }
     return eventCreate(event_name, event_id, event_date);
 }
@@ -124,14 +125,14 @@ static Event copyExistEventById(EventManager em, char* event_name, int event_id,
 //check if there is an event with the same name on the same date
 static bool isEqualEventsByNameAndDate(EventManager em, Event checking_event)
 {
-    Event event_element_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
-    while(event_element_pointer != NULL)
+    Event event_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
+    while(event_pointer != NULL)
     {
-        if(eventCompareName(event_element_pointer, checking_event) && eventCompareDate(event_element_pointer, checking_event) == 0)
+        if(eventCompareName(event_pointer, checking_event) && eventCompareDate(event_pointer, checking_event) == 0)
         {
             return true;
         }
-        event_element_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+        event_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
     }
     return false;
 }
@@ -152,21 +153,21 @@ static Event createTmpEvent(int event_id)
 //update the event counter of the member + update priority
 static EventManagerResult updateMemberEventsCounterBy(EventManager em, Member tmp_member, int change_by)
 {
-    Member member_element_pointer = (Member)pqGetFirst(em->exist_members); // not sure if casting is required.
-    while(member_element_pointer != NULL)
+    Member member_pointer = (Member) pqGetFirst(em->exist_members); // not sure if casting is required.
+    while(member_pointer != NULL)
     {
-        if(compareMembersById(member_element_pointer, tmp_member))
+        if(compareMembersById(member_pointer, tmp_member))
         {
             break;
         }
-        member_element_pointer = (Member) pqGetNext(em->exist_members); // not sure if casting is required. 
+        member_pointer = (Member) pqGetNext(em->exist_members); // not sure if casting is required. 
     }
     int *new_member_associated_events_counter;
     int *old_member_associated_events_counter;
-    memberGet(member_element_pointer, NULL, NULL, old_member_associated_events_counter);
-    changeMemberEventsCounter(member_element_pointer, change_by);
-    memberGet(member_element_pointer, NULL, NULL, new_member_associated_events_counter);
-    if(pqChangePriority(em->exist_members, member_element_pointer, &old_member_associated_events_counter, &new_member_associated_events_counter) == PQ_OUT_OF_MEMORY)
+    memberGet(member_pointer, NULL, NULL, old_member_associated_events_counter);
+    changeMemberEventsCounter(member_pointer, change_by);
+    memberGet(member_pointer, NULL, NULL, new_member_associated_events_counter);
+    if(pqChangePriority(em->exist_members, member_pointer, &old_member_associated_events_counter, &new_member_associated_events_counter) == PQ_OUT_OF_MEMORY)
     {
         return EM_OUT_OF_MEMORY;  
     }
@@ -503,4 +504,82 @@ EventManagerResult emRemoveMemberFromEvent (EventManager em, int member_id, int 
     pqRemoveElement(eventGetMembers(event_element_pointer), tmp_member);
     memberDestroy(tmp_member);
     return EM_SUCCESS;
+}
+
+//*** 10 ***
+EventManagerResult emTick(EventManager em, int days)
+{
+    if(em == NULL)
+    {
+        return EM_NULL_ARGUMENT;
+    }
+    if(days <= 0)
+    {
+        return EM_INVALID_DATE;
+    }
+    while(days > 0)
+    {
+        dateTick(em->start_date);
+        days--;
+    }
+    Event event_current_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
+    Event event_next_pointer;
+    Date current_date;
+    while(event_current_pointer != NULL)
+    {
+        eventGet(event_current_pointer, NULL, NULL, current_date);
+        if(dateCompare(current_date, em->start_date) < 0)
+        {
+            event_next_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+            pqRemoveElement(em->events, event_current_pointer);
+            event_current_pointer = event_next_pointer;
+        }
+        else
+        {
+            event_current_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+        }
+    }
+    return EM_SUCCESS;
+}
+
+//*** 12 ***
+char* emGetNextEvent(EventManager em)
+{
+    if(em == NULL)
+    {
+        return NULL;
+    }
+    Event next_event = (Event) pqGetFirst(em->events); // not sure if casting is required.
+    if(next_event == NULL) // what we should return if there is no events in the queue?
+    {
+        return NULL;
+    }
+    char* event_name;
+    eventGet(next_event, event_name, NULL, NULL);
+    return event_name;
+}
+
+//*** 14 ***
+void emPrintAllResponsibleMembers(EventManager em, const char* file_name)
+{
+    if(em != NULL && file_name != NULL)
+    {
+        FILE* stream = fopen(file_name, "a");
+        if(stream != NULL)
+        {
+            Member current_member_pointer = (Member) pqGetFirst(em->exist_members); // not sure if casting is required.
+            char* current_member_name;
+            int* current_member_associated_events_counter;
+            while(current_member_pointer != NULL)
+            {
+                memberGet(current_member_pointer, current_member_name, NULL, current_member_associated_events_counter);
+                if(*current_member_associated_events_counter > 0)
+                {
+                    fprintf(stream, "%s,%d\n", current_member_name, *current_member_associated_events_counter);
+                }
+                current_member_pointer = (Member) pqGetNext(em->exist_members); // not sure if casting is required. 
+            }
+            fclose(stream);
+        }
+    }
 }
