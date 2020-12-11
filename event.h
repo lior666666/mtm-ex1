@@ -41,14 +41,30 @@ Event eventCopy(Event event);
 * eventGet: Returns the name and the id number of the event. 
 *
 * @param event - Target Event.
-* @param event_name - the pointer to assign to name of the Event.
-* @param event_id - the pointer to assign to id of the Event.
-* @param event_date - the pointer to assign to date of the Event.
+* @return
+*  the event's date is assigned to the pointer. if event NULL, return null
+*/
+Date eventGetDate(Event event);
+
+/**
+* eventGet: Returns the name and the id number of the event. 
+*
+* @param event - Target Event.
 *
 * @return
-*  the event neme and event id and event date is assigned to the pointers. if the pointer is NULL, do nothing with this pointer. 
+*  the event neme. if the event is NULL, return NULL. 
 */
-void eventGet(Event event, char* event_name, int* event_id, Date event_date);
+char* eventGetName(Event event);
+
+/**
+* eventGet: Returns the name and the id number of the event. 
+*
+* @param event - Target Event.
+*
+* @return
+*  the event id and event date is assigned to the pointers. if the event is NULL, return NULL. 
+*/
+int eventGetId(Event event);
 
 /**
 * eventGetMembers: Returns the members list of the event. 
@@ -86,9 +102,9 @@ bool eventCompareName(Event first_event, Event second_event);
 * @param first_event - first Event to cpmpare.
 * @param second_event - second Event to compare with the first one.
 * @return
-* 		0 - if the date's are equal. 
-*       possitive number - if the second date is bigger than the first one. 
-*       negetive number - if the second date is smaller than the first one. 
+* 		A negative integer if the date of the firstevent occurs first.
+* 		0 if they're equal or one of the dates is NULL or one of the events is NULL.
+*		A positive integer if the date of the firstevent arrives after the date of the second event.
 */
 int eventCompareDate(Event first_event, Event second_event);
 
