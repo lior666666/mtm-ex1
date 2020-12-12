@@ -59,17 +59,34 @@ bool compareMembersById(Member first_member, Member second_member);
 int compareMembersByEventsCounter(Member first_member, Member second_member);
 
 /**
-* memberGet: Returns the name, id number and the associated events counter of the member. 
+* memberGetName: Returns the member name.
 *
 * @param member - Target Member.
-* @param name - the pointer to assign to name of the Member.
-* @param id - the pointer to assign to id of the Member.
-* @param associated_events_counter - the pointer to assign to associated events counter of the Member.
-*
 * @return
-*  the member name, id and associated events counter are assigned to the pointers. if the pointer is NULL, do nothing with this pointer. 
+*   returns NULL in case the member is NULL.
+* 	Otherwise returns member name.
 */
-void memberGet(Member member, char* name, int* id, int* associated_events_counter);
+char* memberGetName(Member member);
+
+/**
+* memberGetId: Returns the member id.
+*
+* @param member - Target Member.
+* @return
+*   returns -1 in case the member is NULL.
+* 	Otherwise returns member id.
+*/
+int memberGetId(Member member);
+
+/**
+* memberGetEventsCounter: Returns the member associated events counter.
+*
+* @param member - Target Member.
+* @return
+*   returns -1 in case the member is NULL.
+* 	Otherwise returns member associated events counter. 
+*/
+int memberGetEventsCounter(Member member);
 
 /**
 * changeMemberEventsCounter: increases or decrease the associated events counter of the target Member by change_by.

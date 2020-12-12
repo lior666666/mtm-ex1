@@ -6,7 +6,8 @@
 #include "date.h"
 #include "member.h"
 #include "priority_queue.h"
-//remember to remove "priority_queue.h"
+
+#define INVALID_ID -1
 
 struct Event_t 
 {
@@ -133,23 +134,31 @@ Event eventCopy(Event event)
     return event_copy; 
 }
 
-void eventGet(Event event, char* event_name, int* event_id, Date event_date)
+Date eventGetDate(Event event)
 {
-    if(event != NULL)
+    if(event == NULL)
     {
-        if(event_name != NULL)
-        {
-            *event_name = event->event_name;
-        }
-        if(event_id!= NULL)
-        {
-            *event_id = event->event_id; 
-        }
-        if(event_date != NULL)
-        {
-            event_date = event->event_date; 
-        }
+        return NULL;
     }
+    return event->event_date;
+}
+
+char* eventGetName(Event event)
+{
+    if(event == NULL)
+    {
+        return NULL;
+    }
+    return event->event_name;
+}
+
+int eventGetId(Event event)
+{
+    if(event == NULL)
+    {
+        return INVALID_ID;
+    }
+    return event->event_id;
 }
 
 PriorityQueue eventGetMembers(Event event)

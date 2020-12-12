@@ -6,6 +6,8 @@
 #define NEGATIVE_COUNTER -1
 #define NULL_ARGUMENT -1
 #define SUCCESS 0
+#define INVALID_ID -1
+#define INVALID_COUNTER -1
 
 struct Member_t 
 {
@@ -85,26 +87,36 @@ int compareMembersByEventsCounter(Member first_member, Member second_member)
 }
 
 //*** 6 ***
-void memberGet(Member member, char* name, int* id, int* associated_events_counter)
+char* memberGetName(Member member)
 {
-    if(member != NULL)
+    if(member == NULL)
     {
-        if(name != NULL)
-        {
-            *name = member->name;
-        }
-        if(id != NULL)
-        {
-            *id = member->id; 
-        }
-        if(associated_events_counter != NULL)
-        {
-            *associated_events_counter = member->associated_events_counter; 
-        }
+        return NULL; 
     }
+    return member->name;
 }
 
 //*** 7 ***
+int memberGetId(Member member)
+{
+     if(member == NULL)
+    {
+        return INVALID_ID; 
+    }
+    return member->id;
+}
+
+//*** 8 ***
+int memberGetEventsCounter(Member member)
+{
+     if(member == NULL)
+    {
+        return INVALID_COUNTER; 
+    }
+    return member->associated_events_counter;
+}
+
+//*** 9 ***
 int changeMemberEventsCounter(Member member, int change_by)
 {
     if (member == NULL || member->associated_events_counter == NULL)

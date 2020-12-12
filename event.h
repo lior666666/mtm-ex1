@@ -38,17 +38,36 @@ void eventDestroy(Event event);
 Event eventCopy(Event event);
 
 /**
-* eventGet: Returns the name, id number and the date of the event. 
+* eventGetDate: Returns the event date.
 *
 * @param event - Target Event.
-* @param event_name - the pointer to assign to name of the Event.
-* @param event_id - the pointer to assign to id of the Event.
-* @param event_date - the pointer to assign to date of the Event.
+* @return
+*   if the event is NULL, return NULL.
+*   Otherwise returns event date.
+*/
+Date eventGetDate(Event event);
+
+/**
+* eventGetName: Returns the event name.
+*
+* @param event - Target Event.
 *
 * @return
-*  the event neme and event id and event date is assigned to the pointers. if the pointer is NULL, do nothing with this pointer. 
+*   if the event is NULL, returns NULL.
+*   Otherwise returns event name.
 */
-void eventGet(Event event, char* event_name, int* event_id, Date event_date);
+char* eventGetName(Event event);
+
+/**
+* eventGetId: Returns the event id.
+*
+* @param event - Target Event.
+*
+* @return
+*   if the event is NULL, returns -1.
+*   Otherwise returns event id.
+*/
+int eventGetId(Event event);
 
 /**
 * eventGetMembers: Returns the members list of the event. 
@@ -57,7 +76,7 @@ void eventGet(Event event, char* event_name, int* event_id, Date event_date);
 *
 * @return
 * 	returns NULL in case the event is NULL.
-* 	Otherwise returns the queue of the members.
+* 	Otherwise return the queue of the members.
 */
 PriorityQueue eventGetMembers(Event event);
 
