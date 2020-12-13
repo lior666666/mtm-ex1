@@ -16,11 +16,11 @@ struct Date_t
 //*** 1 ***
 Date dateCreate(int day, int month, int year)
 {
-    if(day < 1 && day > DAYS_IN_MONTH)
+    if(day < 1 || day > DAYS_IN_MONTH)
     {
         return NULL;
     }
-    if(month < 1 && month > MONTHS_IN_YEAR)
+    if(month < 1 || month > MONTHS_IN_YEAR)
     {
         return NULL;
     }
