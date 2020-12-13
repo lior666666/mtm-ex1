@@ -169,6 +169,25 @@ static Event findEventById(EventManager em, Event tmp_event)
     return event_pointer;
 }
 
+//update the date of specific event
+void updateDate(Date current_date, Date new_date)
+{
+    int day = 1;
+    int month = 1;
+    int year = 1;
+    int* current_day_pointer = &day;
+    int* current_month_pointer = &month;
+    int* current_year_pointer = &year;
+    int* new_day_pointer = &day;
+    int* new_month_pointer = &month;
+    int* new_year_pointer = &year;
+    dateGet(current_date, current_day_pointer, current_month_pointer, current_year_pointer);
+    dateGet(new_date, new_day_pointer, new_month_pointer, new_year_pointer);
+    *current_day_pointer = *new_day_pointer;
+    *current_month_pointer = *new_month_pointer;
+    *current_year_pointer = *new_year_pointer;
+}
+
 //update the event counter of the member + update priority
 static EventManagerResult updateMemberEventsCounterBy(EventManager em, Member tmp_member, int change_by)
 {
@@ -451,19 +470,12 @@ EventManagerResult emChangeEventDate(EventManager em, int event_id, Date new_dat
         return EM_EVENT_ALREADY_EXISTS; 
     }
     Event event_to_change = findEventById(em, temp_event);
-    Date old_date = eventGetDate(event_to_change);
-    if(pqChangePriority(em->events, event_to_change, old_date, new_date) == PQ_OUT_OF_MEMORY)
+    Date current_date = eventGetDate(event_to_change);
+    if(pqChangePriority(em->events, event_to_change, current_date, new_date) == PQ_OUT_OF_MEMORY)
     {
         return EM_OUT_OF_MEMORY;
     }
-    int day = 1;
-    int month = 1;
-    int year = 1;
-    int* day_pointer = &day;
-    int* month_pointer = &month;
-    int* year_pointer = &year;
-    dateGet(old_date, day_pointer, month_pointer, year_pointer);
-    dateGet(new_date, day_pointer, month_pointer, year_pointer);
+    updateDate(current_date, new_date);
     eventDestroy(temp_event);
     return EM_SUCCESS;
 }
