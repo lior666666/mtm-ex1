@@ -71,7 +71,7 @@ static void insertElementPointer(PriorityQueue queue_head, PriorityQueue new_ele
         current_element = current_element->next_in_line;
     }
     //if there is no real elements in the queue OR new_priority is the lowest priority
-    queue_head->next_in_line = new_element_in_queue;
+    previous_element_in_queue->next_in_line = new_element_in_queue;
     new_element_in_queue->next_in_line = NULL;
 }
 
@@ -177,7 +177,7 @@ bool pqContains(PriorityQueue queue, PQElement element)
     {
         return false; 
     }
-    PriorityQueue temp_queue_pointer = queue_head;
+    PriorityQueue temp_queue_pointer = queue_head->next_in_line;
     while(temp_queue_pointer != NULL)
     {
         if(queue_head->equalPqElement(temp_queue_pointer->pqe_element, element))
