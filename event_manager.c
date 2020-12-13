@@ -451,10 +451,19 @@ EventManagerResult emChangeEventDate(EventManager em, int event_id, Date new_dat
         return EM_EVENT_ALREADY_EXISTS; 
     }
     Event event_to_change = findEventById(em, temp_event);
-    while(dateCompare(new_date, eventGetDate(event_to_change)) != 0)
+    Date old_date = eventGetDate(event_to_change);
+    if(pqChangePriority(em->events, event_to_change, old_date, new_date) == PQ_OUT_OF_MEMORY)
     {
-        dateTick(event_to_change);
+        return EM_OUT_OF_MEMORY;
     }
+    int day = 1;
+    int month = 1;
+    int year = 1;
+    int* day_pointer = &day;
+    int* month_pointer = &month;
+    int* year_pointer = &year;
+    dateGet(old_date, day_pointer, month_pointer, year_pointer);
+    dateGet(new_date, day_pointer, month_pointer, year_pointer);
     eventDestroy(temp_event);
     return EM_SUCCESS;
 }
