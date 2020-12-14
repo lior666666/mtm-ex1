@@ -1,11 +1,9 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "event.h"
 #include <string.h>
-#include "date.h"
 #include "member.h"
-#include "priority_queue.h"
+#include "event.h"
 
 #define INVALID_ID -1
 
@@ -38,7 +36,7 @@ static void memberDestroyGeneric(PQElement generic_member)
 
 static bool equalGenericMember(PQElement first_generic_member, PQElement second_generic_member)
 {
-    return compareMembersById(first_generic_member, second_generic_member) == 0;
+    return compareMembersById(first_generic_member, second_generic_member);
 }
 
 static PQElementPriority copyIdMemberGeneric(PQElementPriority generic_id)
@@ -68,7 +66,7 @@ static int compareMembersIdGeneric(PQElementPriority first_member_id, PQElementP
 
 Event eventCreate(char* event_name, int event_id, Date event_date)
 {
-    if(event_name == NULL || event_id == NULL || event_date == NULL)
+    if(event_name == NULL || event_date == NULL)
     {
         return NULL;
     }
@@ -84,7 +82,7 @@ Event eventCreate(char* event_name, int event_id, Date event_date)
         return NULL;
     }
     new_event->event_name = malloc(strlen(event_name)+1);
-    if(new_event->event_name = NULL)
+    if(new_event->event_name == NULL)
     {
         dateDestroy(new_event->event_date);
         free(new_event); 
