@@ -76,16 +76,16 @@ static void insertElementPointer(PriorityQueue queue_head, PriorityQueue new_ele
 }
 
  /** Internal function, to destroy all elements in the queue
-  * recieve the head of queue, the free functions*/ 
-static void pqDestroyElements(PriorityQueue queue, FreePQElement free_pq_element, FreePQElementPriority free_pq_element_priority)
+  * recieve the head of queue, and the first element to free*/ 
+static void pqDestroyElements(PriorityQueue queue_head, PriorityQueue pq_to_delete)
 {
-    while(queue != NULL)
+    while(pq_to_delete != NULL)
     {
-        free_pq_element(queue->pqe_element);
-        free_pq_element_priority(queue->pq_element_priority);
-        pqDestroyElements(queue->next_in_line, free_pq_element, free_pq_element_priority); //destroy all the list with recursion
-        free(queue);
-        break;
+        PriorityQueue delete_head = pq_to_delete;
+        pq_to_delete = pq_to_delete->next_in_line;
+        queue_head->freePqElement(delete_head->pqe_element);
+        queue_head->freePqElementPriority(delete_head->pq_element_priority);
+        free(delete_head);
     }
 }
 
@@ -118,7 +118,8 @@ PriorityQueue pqCreate(CopyPQElement copy_element, FreePQElement free_element, E
 //*** 2 ***
 void pqDestroy(PriorityQueue queue)
 {
-    pqDestroyElements(queue, queue->freePqElement, queue->freePqElementPriority);
+    pqDestroyElements(queue, queue->next_in_line);
+    free(queue);
 }
 
 //*** 3 ***
@@ -260,7 +261,7 @@ PriorityQueueResult pqRemove(PriorityQueue queue)
     {
         queue_head->next_in_line = element_to_remove->next_in_line;
         element_to_remove->next_in_line = NULL;
-        pqDestroyElements(element_to_remove, queue_head->freePqElement, queue_head->freePqElementPriority);
+        pqDestroyElements(queue_head, element_to_remove);
     }
     return PQ_SUCCESS;
 }
@@ -285,7 +286,7 @@ PriorityQueueResult pqRemoveElement(PriorityQueue queue, PQElement element)
         {
             previous_queue->next_in_line = current_queue_pointer->next_in_line;
             current_queue_pointer->next_in_line = NULL;
-            pqDestroyElements(current_queue_pointer, queue_head->freePqElement, queue_head->freePqElementPriority);
+            pqDestroyElements(queue_head, current_queue_pointer);
             return PQ_SUCCESS;
         }
         current_queue_pointer = current_queue_pointer->next_in_line;
@@ -303,7 +304,10 @@ PriorityQueueResult pqClear(PriorityQueue queue)
         return PQ_NULL_ARGUMENT;
     }
     queue_head->iterator = NULL;
-    pqDestroyElements(queue_head->next_in_line, queue_head->freePqElement, queue_head->freePqElementPriority);
+    while(queue_head->next_in_line != NULL)
+    {
+        pqRemove(queue_head);
+    }
     return PQ_SUCCESS;
 }
 
