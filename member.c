@@ -1,10 +1,16 @@
+#include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
-#include <stdlib.h>
 #include "member.h"
-#define SUCCESS 0
-#define NULL_ARGUMENT -1
+#include <string.h>
+
+
 #define NEGATIVE_COUNTER -1
+#define NULL_ARGUMENT -1
+#define SUCCESS 0
+#define INVALID_ID -1
+#define INVALID_COUNTER -1
+
 struct Member_t 
 {
     char* name;
@@ -15,7 +21,7 @@ struct Member_t
 //*** 1 ***
 Member memberCreate(char* name, int id)
 {
-    if(name == NULL || id == NULL)
+    if(name == NULL )
     {
         return NULL;
     }
@@ -97,7 +103,7 @@ int memberGetId(Member member)
 {
      if(member == NULL)
     {
-        return NULL; 
+        return INVALID_ID; 
     }
     return member->id;
 }
@@ -107,16 +113,15 @@ int memberGetEventsCounter(Member member)
 {
      if(member == NULL)
     {
-        return NULL; 
+        return INVALID_COUNTER; 
     }
     return member->associated_events_counter;
 }
 
-
 //*** 9 ***
 int changeMemberEventsCounter(Member member, int change_by)
 {
-    if (member == NULL || member->associated_events_counter == NULL)
+    if (member == NULL)
     {
         return NULL_ARGUMENT;
     }
