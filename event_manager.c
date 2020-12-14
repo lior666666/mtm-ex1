@@ -12,7 +12,7 @@
 #define REMOVE_MEMBER_FROM_EVENT -1
 #define NO_EVENTS_PLANNED -1
 
-struct EventManager_t 
+struct EventManager_t
 {
     Date start_date;
     PriorityQueue exist_members;
@@ -51,7 +51,7 @@ static PQElementPriority copyMemberEventsCounterGeneric(PQElementPriority generi
         return NULL;
     }
     *copy_generic_events_counter = *(int *) generic_events_counter;
-    return copy_generic_events_counter; 
+    return copy_generic_events_counter;
 }
 
 static void freeMemberEventsCounter(PQElementPriority copy_generic_events_counter)
@@ -91,7 +91,7 @@ static PQElementPriority copyDateGeneric(PQElementPriority generic_date)
     {
         return NULL;
     }
-    return memberCopy(generic_date);
+    return dateCopy(generic_date);
 }
 
 static void freeDateGeneric(PQElementPriority date_generic)
@@ -101,29 +101,27 @@ static void freeDateGeneric(PQElementPriority date_generic)
 
 static int compareDateGeneric(PQElementPriority first_date, PQElementPriority second_date)
 {
-    return dateCompare(first_date, second_date);
+    return dateCompare(second_date, first_date);
 }
 //*** <--
 
-//find the event id in the queue, if exists, and copy this event, or create new one by the arguments
-static Event copyExistEventById(EventManager em, char* event_name, int event_id, Date event_date)
+//find the event id in the queue, if exists, and copy this event (but with the new date!), or create new one by the arguments
+static Event copyExistEventByIdWithNewDate(EventManager em, char* event_name, int event_id, Date new_date)
 {
     Event event_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
     char* current_name;
     int current_id;
-    Date current_date;
     while(event_pointer != NULL)
     {
         current_name = eventGetName(event_pointer);
         current_id = eventGetId(event_pointer);
-        current_date = eventGetDate(event_pointer);
         if(current_id == event_id)
         {
-            return eventCreate(current_name, event_id, current_date);
+            return eventCreate(current_name, event_id, new_date);
         }
-        event_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+        event_pointer = (Event) pqGetNext(em->events); // not sure if casting is required.
     }
-    return eventCreate(event_name, event_id, event_date);
+    return eventCreate(event_name, event_id, new_date);
 }
 
 //check if there is an event with the same name on the same date
@@ -136,7 +134,7 @@ static bool isEqualEventsByNameAndDate(EventManager em, Event checking_event)
         {
             return true;
         }
-        event_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+        event_pointer = (Event) pqGetNext(em->events); // not sure if casting is required.
     }
     return false;
 }
@@ -154,19 +152,34 @@ static Event createTmpEvent(int event_id)
     return temp_event;
 }
 
-//finds pointer to event with same ID, NULL if there is no such event. 
+//finds pointer to event with same ID, NULL if there is no such event.
 static Event findEventById(EventManager em, Event tmp_event)
 {
-    Event event_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required. 
+    Event event_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
     while(event_pointer != NULL)
         {
             if(eventCompareId(event_pointer, tmp_event))
             {
                 break;
-            }   
-            event_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+            }
+            event_pointer = (Event) pqGetNext(em->events); // not sure if casting is required.
         }
     return event_pointer;
+}
+
+//finds pointer to member with same ID, NULL if there is no such member.
+static Member findMemberById(PriorityQueue members, Member tmp_member)
+{
+    Member member_pointer = (Member) pqGetFirst(members); // not sure if casting is required.
+    while(member_pointer != NULL)
+        {
+            if(compareMembersById(member_pointer, tmp_member))
+            {
+                break;
+            }
+            member_pointer = (Member) pqGetNext(members); // not sure if casting is required.
+        }
+    return member_pointer;
 }
 
 //update the date of specific event
@@ -198,14 +211,14 @@ static EventManagerResult updateMemberEventsCounterBy(EventManager em, Member tm
         {
             break;
         }
-        member_pointer = (Member) pqGetNext(em->exist_members); // not sure if casting is required. 
+        member_pointer = (Member) pqGetNext(em->exist_members); // not sure if casting is required.
     }
     int old_member_associated_events_counter = memberGetEventsCounter(member_pointer);
     changeMemberEventsCounter(member_pointer, change_by);
     int new_member_associated_events_counter = memberGetEventsCounter(member_pointer);
     if(pqChangePriority(em->exist_members, member_pointer, &old_member_associated_events_counter, &new_member_associated_events_counter) == PQ_OUT_OF_MEMORY)
     {
-        changeMemberEventsCounter(member_pointer, (change_by*-1)); // to make sure the priority changed back to what it was. 
+        changeMemberEventsCounter(member_pointer, (change_by*-1)); // to make sure the priority changed back to what it was.
         return EM_OUT_OF_MEMORY;
     }
     return EM_SUCCESS;
@@ -229,60 +242,59 @@ static EventManagerResult emAddOrRemoveMemberToEvent(EventManager em, int member
     Event tmp_event = createTmpEvent(event_id);
     if(tmp_event == NULL)
     {
-        return EM_OUT_OF_MEMORY; 
+        return EM_OUT_OF_MEMORY;
     }
     Event event_element_pointer = findEventById(em, tmp_event);
     if(event_element_pointer == NULL)
     {
-        destroyEvent(tmp_event);
+        eventDestroy(tmp_event);
         return EM_EVENT_ID_NOT_EXISTS;
     }
-    destroyEvent(tmp_event);
+    eventDestroy(tmp_event);
 
     Member tmp_member = memberCreate("tmp-member", member_id);
     if(tmp_member == NULL)
     {
-        return EM_OUT_OF_MEMORY; 
+        return EM_OUT_OF_MEMORY;
     }
     if(!pqContains(em->exist_members, tmp_member))
     {
         memberDestroy(tmp_member);
         return EM_MEMBER_ID_NOT_EXISTS;
     }
+    Member current_member = findMemberById(em->exist_members, tmp_member);
+    memberDestroy(tmp_member);
+    if(current_member == NULL)
+    {
+        return EM_OUT_OF_MEMORY;
+    }
     if(flag == ADD_MEMBER_TO_EVENT)
     {
-        if(pqContains(eventGetMembers(event_element_pointer), tmp_member))
+        if(pqContains(eventGetMembers(event_element_pointer), current_member))
         {
-            memberDestroy(tmp_member);
             return EM_EVENT_AND_MEMBER_ALREADY_LINKED;
         }
-        if(updateMemberEventsCounterBy(em, tmp_member, flag) == EM_OUT_OF_MEMORY)
+        if(updateMemberEventsCounterBy(em, current_member, flag) == EM_OUT_OF_MEMORY)
         {
-            memberDestroy(tmp_member);
             return EM_OUT_OF_MEMORY;
         }
-        if(pqInsert(eventGetMembers(event_element_pointer), tmp_member, member_id) == PQ_OUT_OF_MEMORY)
+        if(pqInsert(eventGetMembers(event_element_pointer), current_member, &member_id) == PQ_OUT_OF_MEMORY)
         {
-            memberDestroy(tmp_member);
             return EM_OUT_OF_MEMORY;
         }
-        memberDestroy(tmp_member);
         return EM_SUCCESS;
     }
     else
     {
-        if(!pqContains(eventGetMembers(event_element_pointer), tmp_member))
+        if(!pqContains(eventGetMembers(event_element_pointer), current_member))
         {
-            memberDestroy(tmp_member);
             return EM_EVENT_AND_MEMBER_NOT_LINKED;
         }
-        if(updateMemberEventsCounterBy(em, tmp_member, flag) == EM_OUT_OF_MEMORY)
+        if(updateMemberEventsCounterBy(em, current_member, flag) == EM_OUT_OF_MEMORY)
         {
-            memberDestroy(tmp_member);
             return EM_OUT_OF_MEMORY;
         }
-        pqRemoveElement(eventGetMembers(event_element_pointer), tmp_member);
-        memberDestroy(tmp_member);
+        pqRemoveElement(eventGetMembers(event_element_pointer), current_member);
         return EM_SUCCESS;
     }
 }
@@ -294,12 +306,12 @@ EventManager createEventManager(Date date)
     {
         return NULL;
     }
-    EventManager event_manager = malloc(sizeof(*event_manager)); 
+    EventManager event_manager = malloc(sizeof(*event_manager));
     if(event_manager == NULL)
     {
         return NULL;
     }
-    event_manager->start_date = dateCopy(date); 
+    event_manager->start_date = dateCopy(date);
     if(event_manager->start_date == NULL)
     {
         free(event_manager);
@@ -353,12 +365,12 @@ EventManagerResult emAddEventByDate(EventManager em, char* event_name, Date date
     Event new_event_element = eventCreate(event_name, event_id, date);
     if(new_event_element == NULL)
     {
-        return EM_OUT_OF_MEMORY; 
+        return EM_OUT_OF_MEMORY;
     }
     if(isEqualEventsByNameAndDate(em, new_event_element))
     {
         eventDestroy(new_event_element);
-        return EM_EVENT_ALREADY_EXISTS; 
+        return EM_EVENT_ALREADY_EXISTS;
     }
     if(pqContains(em->events, new_event_element))
     {
@@ -368,10 +380,10 @@ EventManagerResult emAddEventByDate(EventManager em, char* event_name, Date date
     if(pqInsert(em->events, new_event_element, date) == PQ_OUT_OF_MEMORY)
     {
        eventDestroy(new_event_element);
-       return EM_OUT_OF_MEMORY; 
+       return EM_OUT_OF_MEMORY;
     }
     eventDestroy(new_event_element);
-    return EM_SUCCESS; 
+    return EM_SUCCESS;
 }
 
 //*** 4 ***
@@ -424,15 +436,15 @@ EventManagerResult emRemoveEvent(EventManager em, int event_id)
         return EM_EVENT_NOT_EXISTS;
     }
     PriorityQueue members_to_remove = eventGetMembers(event_pointer);
-    Member member_pointer = (Member) pqGetFirst(members_to_remove); // not sure if casting is needed. 
+    Member member_pointer = (Member) pqGetFirst(members_to_remove); // not sure if casting is needed.
     while(member_pointer != NULL)
     {
        if(emRemoveMemberFromEvent(em, memberGetId(member_pointer), event_id) == EM_OUT_OF_MEMORY)
        {
           eventDestroy(temp_event);
-          return EM_OUT_OF_MEMORY; 
+          return EM_OUT_OF_MEMORY;
        }
-       member_pointer = (Member) pqGetNext(members_to_remove); // not sure if casting is needed. 
+       member_pointer = (Member) pqGetNext(members_to_remove); // not sure if casting is needed.
     }
     pqRemoveElement(em->events, temp_event);
     eventDestroy(temp_event);
@@ -454,7 +466,7 @@ EventManagerResult emChangeEventDate(EventManager em, int event_id, Date new_dat
     {
         return EM_INVALID_EVENT_ID;
     }
-    Event temp_event = copyExistEventById(em, "tmp-event", event_id, new_date);
+    Event temp_event = copyExistEventByIdWithNewDate(em, "tmp-event", event_id, new_date);
     if(temp_event == NULL)
     {
         return EM_OUT_OF_MEMORY;
@@ -467,12 +479,13 @@ EventManagerResult emChangeEventDate(EventManager em, int event_id, Date new_dat
     if(isEqualEventsByNameAndDate(em, temp_event))
     {
         eventDestroy(temp_event);
-        return EM_EVENT_ALREADY_EXISTS; 
+        return EM_EVENT_ALREADY_EXISTS;
     }
     Event event_to_change = findEventById(em, temp_event);
     Date current_date = eventGetDate(event_to_change);
     if(pqChangePriority(em->events, event_to_change, current_date, new_date) == PQ_OUT_OF_MEMORY)
     {
+        eventDestroy(temp_event);
         return EM_OUT_OF_MEMORY;
     }
     updateDate(current_date, new_date);
@@ -541,19 +554,19 @@ EventManagerResult emTick(EventManager em, int days)
     }
     Event event_current_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
     Event event_next_pointer;
-    Date current_date;
+    Date current_event_date;
     while(event_current_pointer != NULL)
     {
-        current_date = eventGetDate(event_current_pointer);
-        if(dateCompare(current_date, em->start_date) < 0)
+        current_event_date = eventGetDate(event_current_pointer);
+        if(dateCompare(current_event_date, em->start_date) < 0)
         {
             event_next_pointer = (Event) pqGetNext(em->events); // not sure if casting is required.
-            emRemoveEvent(em, event_current_pointer); 
+            emRemoveEvent(em, eventGetId(event_current_pointer));
             event_current_pointer = event_next_pointer;
         }
         else
         {
-            event_current_pointer = (Event) pqGetNext(em->events); // not sure if casting is required. 
+            event_current_pointer = (Event) pqGetNext(em->events); // not sure if casting is required.
         }
     }
     return EM_SUCCESS;
@@ -595,21 +608,21 @@ void emPrintAllEvents(EventManager em, const char* file_name)
             Event current_event_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
             char* current_event_name;
             Date current_event_date;
-            int day, month, year; 
+            int day, month, year;
             Member current_member_pointer;
             char* current_member_name;
             while(current_event_pointer != NULL)
             {
                 current_event_name = eventGetName(current_event_pointer);
-                current_event_date = eventGetdate(current_event_pointer);
+                current_event_date = eventGetDate(current_event_pointer);
                 dateGet(current_event_date, &day, &month, &year);
                 fprintf(stream, "%s,%d.%d.%d", current_event_name, day, month, year);
-                current_member_pointer = (Member) pqGetfirst(eventGetMembers(current_event_pointer)); // not sure if casting is required. 
+                current_member_pointer = (Member) pqGetFirst(eventGetMembers(current_event_pointer)); // not sure if casting is required.
                 while(current_member_pointer != NULL)
                 {
                     current_member_name = memberGetName(current_member_pointer);
                     fprintf(stream, ",%s", current_member_name);
-                    current_member_pointer = (Member) pqGetNext(eventGetMembers(current_event_pointer)); // not sure if casting is required. 
+                    current_member_pointer = (Member) pqGetNext(eventGetMembers(current_event_pointer)); // not sure if casting is required.
                 }
                 fprintf(stream, "/n");
                 current_event_pointer = (Event) pqGetNext(em->events);
@@ -638,7 +651,7 @@ void emPrintAllResponsibleMembers(EventManager em, const char* file_name)
                 {
                     fprintf(stream, "%s,%d\n", current_member_name, current_member_associated_events_counter);
                 }
-                current_member_pointer = (Member) pqGetNext(em->exist_members); // not sure if casting is required. 
+                current_member_pointer = (Member) pqGetNext(em->exist_members); // not sure if casting is required.
             }
             fclose(stream);
         }

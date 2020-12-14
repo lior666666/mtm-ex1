@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include "member.h"
 
 #define NEGATIVE_COUNTER -1
@@ -19,7 +20,7 @@ struct Member_t
 //*** 1 ***
 Member memberCreate(char* name, int id)
 {
-    if(name == NULL || id == NULL)
+    if(name == NULL)
     {
         return NULL;
     }
@@ -119,7 +120,7 @@ int memberGetEventsCounter(Member member)
 //*** 9 ***
 int changeMemberEventsCounter(Member member, int change_by)
 {
-    if (member == NULL || member->associated_events_counter == NULL)
+    if (member == NULL)
     {
         return NULL_ARGUMENT;
     }
