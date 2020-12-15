@@ -15,7 +15,7 @@ typedef struct Event_t *Event;
 * @param event_id - the id of the event.
 * @param event_date - the date of the event.
 * @return
-* 	NULL - if allocation failed of one of args equales NULL. 
+* 	NULL - if allocation failed of one of args equales NULL.
 * 	A new Event in case of success.
 */
 Event eventCreate(char* event_name, int event_id, Date event_date);
@@ -23,7 +23,7 @@ Event eventCreate(char* event_name, int event_id, Date event_date);
 /**
 * eventDestroy: Deallocates an existing Event.
 *
-* @param event - Target event to be deallocated. 
+* @param event - Target event to be deallocated.
 */
 void eventDestroy(Event event);
 
@@ -70,7 +70,7 @@ char* eventGetName(Event event);
 int eventGetId(Event event);
 
 /**
-* eventGetMembers: Returns the members list of the event. 
+* eventGetMembers: Returns the members list of the event.
 *
 * @param event - Target Event.
 *
@@ -81,27 +81,27 @@ int eventGetId(Event event);
 PriorityQueue eventGetMembers(Event event);
 
 /**
-* eventCompareId: compares the id between 2 events. 
+* eventCompareId: compares the id between 2 events.
 * @param first_event - first Event to cpmpare.
 * @param second_event - second Event to compare with the first one.
 * @return
-* 		true - if the id's are equal. 
-*       false - if the id's are not the same or one of the events is NULL. 
+* 		true - if the id's are equal.
+*       false - if the id's are not the same or one of the events is NULL.
 */
 bool eventCompareId(Event first_event, Event second_event);
 
 /**
-* eventCompareName: compares the name between 2 events. 
+* eventCompareName: compares the name between 2 events.
 * @param first_event - first Event to cpmpare.
 * @param second_event - second Event to compare with the first one.
 * @return
-* 		true - if the name's are equal. 
-*       false - if the name's are not the same. 
+* 		true - if the name's are equal.
+*       false - if the name's are not the same.
 */
 bool eventCompareName(Event first_event, Event second_event);
 
 /**
-* eventCompareDate: compares the date between 2 events. 
+* eventCompareDate: compares the date between 2 events.
 * @param first_event - first Event to cpmpare.
 * @param second_event - second Event to compare with the first one.
 * @return
@@ -110,5 +110,12 @@ bool eventCompareName(Event first_event, Event second_event);
 *		A positive integer if the date of the firstevent arrives after the date of the second event.
 */
 int eventCompareDate(Event first_event, Event second_event);
+
+/**
+* updateEventDate: change event date to new_date.
+* @param event - event to change.
+* @param new_date - event new date.
+*/
+void updateEventDate(Event event, Date new_date);
 
 #endif //EVENT_H_

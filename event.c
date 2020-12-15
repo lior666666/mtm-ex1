@@ -7,12 +7,12 @@
 
 #define INVALID_ID -1
 
-struct Event_t 
+struct Event_t
 {
-    int event_id; 
+    int event_id;
     char* event_name;
-    Date event_date; 
-    PriorityQueue event_members; 
+    Date event_date;
+    PriorityQueue event_members;
 };
 
 static PQElement memberCopyGeneric(PQElement generic_member)
@@ -26,7 +26,7 @@ static PQElement memberCopyGeneric(PQElement generic_member)
     {
         return NULL;
     }
-    return member_copy; 
+    return member_copy;
 }
 
 static void memberDestroyGeneric(PQElement generic_member)
@@ -51,7 +51,7 @@ static PQElementPriority copyIdMemberGeneric(PQElementPriority generic_id)
         return NULL;
     }
     *copy_id = *(int *) generic_id;
-    return copy_id; 
+    return copy_id;
 }
 
 static void freeIdGeneric(PQElementPriority generic_id)
@@ -61,7 +61,7 @@ static void freeIdGeneric(PQElementPriority generic_id)
 
 static int compareMembersIdGeneric(PQElementPriority first_member_id, PQElementPriority second_member_id)
 {
-    return *(int *) first_member_id - *(int *) second_member_id;
+    return *(int *) second_member_id - *(int *) first_member_id;
 }
 
 Event eventCreate(char* event_name, int event_id, Date event_date)
@@ -70,7 +70,7 @@ Event eventCreate(char* event_name, int event_id, Date event_date)
     {
         return NULL;
     }
-    Event new_event = malloc(sizeof(*new_event)); 
+    Event new_event = malloc(sizeof(*new_event));
     if(new_event == NULL)
     {
         return NULL;
@@ -85,7 +85,7 @@ Event eventCreate(char* event_name, int event_id, Date event_date)
     if(new_event->event_name == NULL)
     {
         dateDestroy(new_event->event_date);
-        free(new_event); 
+        free(new_event);
         return NULL;
     }
     strcpy(new_event->event_name, event_name);
@@ -95,10 +95,10 @@ Event eventCreate(char* event_name, int event_id, Date event_date)
     {
         dateDestroy(new_event->event_date);
         free(new_event->event_name);
-        free(new_event); 
+        free(new_event);
         return NULL;
     }
-    return new_event; 
+    return new_event;
 }
 
 void eventDestroy(Event event)
@@ -127,9 +127,9 @@ Event eventCopy(Event event)
     if(event_copy->event_members == NULL)
     {
         eventDestroy(event_copy);
-        return NULL;  
+        return NULL;
     }
-    return event_copy; 
+    return event_copy;
 }
 
 Date eventGetDate(Event event)
@@ -163,16 +163,16 @@ PriorityQueue eventGetMembers(Event event)
 {
     if(event == NULL)
     {
-        return NULL; 
+        return NULL;
     }
-    return event->event_members; 
+    return event->event_members;
 }
 
 bool eventCompareId(Event first_event, Event second_event)
 {
     if(first_event == NULL || second_event == NULL)
     {
-        return false; 
+        return false;
     }
     return first_event->event_id == second_event->event_id;
 }
@@ -181,7 +181,7 @@ bool eventCompareName(Event first_event, Event second_event)
 {
     if(first_event == NULL || second_event == NULL)
     {
-        return false; 
+        return false;
     }
     return strcmp(first_event->event_name, second_event->event_name) == 0;
 }
@@ -190,8 +190,17 @@ int eventCompareDate(Event first_event, Event second_event)
 {
     if(first_event == NULL || second_event == NULL)
     {
-        return 0; 
+        return 0;
     }
     return dateCompare(first_event->event_date, second_event->event_date);
 }
 
+void updateEventDate(Event event, Date new_date)
+{
+    if (event != NULL && new_date != NULL)
+    {
+        Date date_to_remove = event->event_date;
+        event->event_date = dateCopy(new_date);
+        dateDestroy(date_to_remove);
+    }
+}
