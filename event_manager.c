@@ -202,8 +202,10 @@ static EventManagerResult updateMemberEventsCounterBy(EventManager em, Member tm
     if(pqChangePriority(em->exist_members, member_pointer, old_member, member_pointer) == PQ_OUT_OF_MEMORY)
     {
         changeMemberEventsCounter(member_pointer, (change_by*-1)); // to make sure the priority changed back to what it was.
+        memberDestroy(old_member);
         return EM_OUT_OF_MEMORY;
     }
+    memberDestroy(old_member);
     return EM_SUCCESS;
 }
 
@@ -537,17 +539,16 @@ EventManagerResult emTick(EventManager em, int days)
         days--;
     }
     Event event_current_pointer = (Event) pqGetFirst(em->events); // not sure if casting is required.
-    Event event_next_pointer;
+    Event event_remove_pointer;
     Date current_event_date;
     while(event_current_pointer != NULL)
     {
         current_event_date = eventGetDate(event_current_pointer);
-        //datePrint(current_event_date);
         if(dateCompare(current_event_date, em->start_date) < 0)
         {
-            event_next_pointer = (Event) pqGetNext(em->events); // not sure if casting is required.
-            emRemoveEvent(em, eventGetId(event_current_pointer));
-            event_current_pointer = event_next_pointer;
+            event_remove_pointer = event_current_pointer; // not sure if casting is required.
+            emRemoveEvent(em, eventGetId(event_remove_pointer));
+            event_current_pointer = (Event) pqGetFirst(em->events);
         }
         else
         {
