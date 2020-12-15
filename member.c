@@ -1,9 +1,8 @@
-#include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "member.h"
+#include <stdlib.h>
 #include <string.h>
-
+#include "member.h"
 
 #define NEGATIVE_COUNTER -1
 #define NULL_ARGUMENT -1
@@ -21,7 +20,7 @@ struct Member_t
 //*** 1 ***
 Member memberCreate(char* name, int id)
 {
-    if(name == NULL )
+    if(name == NULL)
     {
         return NULL;
     }

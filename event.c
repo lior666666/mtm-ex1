@@ -93,6 +93,7 @@ static Event eventCreateWithNoMembers(char* event_name, int event_id, Date event
     new_event->event_members = NULL;
     return new_event;
 }
+
 Event eventCreate(char* event_name, int event_id, Date event_date)
 {
     if(event_name == NULL || event_date == NULL)
