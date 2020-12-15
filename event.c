@@ -56,7 +56,7 @@ static PQElementPriority copyIdMemberGeneric(PQElementPriority generic_id)
 
 static void freeIdGeneric(PQElementPriority generic_id)
 {
-    return;
+    free(generic_id);
 }
 
 static int compareMembersIdGeneric(PQElementPriority first_member_id, PQElementPriority second_member_id)
