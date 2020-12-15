@@ -56,12 +56,42 @@ static PQElementPriority copyIdMemberGeneric(PQElementPriority generic_id)
 
 static void freeIdGeneric(PQElementPriority generic_id)
 {
-    return;
+    free(generic_id);
 }
 
 static int compareMembersIdGeneric(PQElementPriority first_member_id, PQElementPriority second_member_id)
 {
     return *(int *) second_member_id - *(int *) first_member_id;
+}
+
+static Event eventCreateWithNoMembers(char* event_name, int event_id, Date event_date)
+{
+    if(event_name == NULL || event_date == NULL)
+    {
+        return NULL;
+    }
+    Event new_event = malloc(sizeof(*new_event));
+    if(new_event == NULL)
+    {
+        return NULL;
+    }
+    new_event->event_date = dateCopy(event_date);
+    if(new_event->event_date == NULL)
+    {
+        free(new_event);
+        return NULL;
+    }
+    new_event->event_name = malloc(strlen(event_name)+1);
+    if(new_event->event_name == NULL)
+    {
+        dateDestroy(new_event->event_date);
+        free(new_event);
+        return NULL;
+    }
+    strcpy(new_event->event_name, event_name);
+    new_event->event_id = event_id;
+    new_event->event_members = NULL;
+    return new_event;
 }
 
 Event eventCreate(char* event_name, int event_id, Date event_date)
@@ -118,7 +148,7 @@ Event eventCopy(Event event)
     {
         return NULL;
     }
-    Event event_copy = eventCreate(event->event_name, event->event_id, event->event_date);
+    Event event_copy = eventCreateWithNoMembers(event->event_name, event->event_id, event->event_date);
     if(event_copy == NULL)
     {
         return NULL;
