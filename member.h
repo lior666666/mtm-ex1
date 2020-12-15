@@ -97,6 +97,6 @@ int memberGetEventsCounter(Member member);
 * 	-1 if a NULL was sent or there is negative counter after the operation.
 * 	zero otherwise.
 */
-int changeMemberEventsCounter(Member member, int change_by)
+int changeMemberEventsCounter(Member member, int change_by);
 
 #endif //MEMBER_H_
