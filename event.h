@@ -1,9 +1,9 @@
 #ifndef EVENT_H_
 #define EVENT_H_
 
+#include <stdbool.h>
 #include "priority_queue.h"
 #include "date.h"
-#include <stdbool.h>
 
 /** Type for defining the event */
 typedef struct Event_t *Event;
@@ -14,11 +14,12 @@ typedef struct Event_t *Event;
 * @param event_name - the day of the event.
 * @param event_id - the id of the event.
 * @param event_date - the date of the event.
+* @param add_members_or_not - a flag that decides if to allocate the members priority queue or not.
 * @return
 * 	NULL - if allocation failed of one of args equales NULL.
 * 	A new Event in case of success.
 */
-Event eventCreate(char* event_name, int event_id, Date event_date);
+Event eventCreate(char* event_name, int event_id, Date event_date, bool add_members_or_not);
 
 /**
 * eventDestroy: Deallocates an existing Event.
@@ -112,10 +113,10 @@ bool eventCompareName(Event first_event, Event second_event);
 int eventCompareDate(Event first_event, Event second_event);
 
 /**
-* updateEventDate: change event date to new_date.
+* eventUpdateDate: change event date to new_date.
 * @param event - event to change.
 * @param new_date - event new date.
 */
-void updateEventDate(Event event, Date new_date);
+void eventUpdateDate(Event event, Date new_date);
 
 #endif //EVENT_H_

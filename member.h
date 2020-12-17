@@ -35,7 +35,7 @@ void memberDestroy(Member member);
 Member memberCopy(Member member);
 
 /**
-* compareMembersById: identify equal members by comparing the target member's ID.
+* memberCompareById: identify equal members by comparing the target member's ID.
 *
 * @param first_member - First target Member.
 * @param second_member - Second target Member.
@@ -43,10 +43,10 @@ Member memberCopy(Member member);
 * 	false if a NULL was sent.
 * 	true if they're equal, false otherwise.
 */
-bool compareMembersById(Member first_member, Member second_member);
+bool memberCompareById(Member first_member, Member second_member);
 
 /**
-* compareMembersByEventsCounter: identify which one of the target members associating with more events.
+* memberCompareByEventsCounter: identify which one of the target members associating with more events.
 *
 * @param first_member - First target Member.
 * @param second_member - Second target Member.
@@ -56,7 +56,7 @@ bool compareMembersById(Member first_member, Member second_member);
 * 	0 if they're associating with the same amount of events;
 *	A negative integer if the second member associating with more events.
 */
-int compareMembersByEventsCounter(Member first_member, Member second_member);
+int memberCompareByEventsCounter(Member first_member, Member second_member);
 
 /**
 * memberGetName: Returns the member name.
@@ -84,12 +84,12 @@ int memberGetId(Member member);
 * @param member - Target Member.
 * @return
 *   returns -1 in case the member is NULL.
-* 	Otherwise returns member associated events counter. 
+* 	Otherwise returns member associated events counter.
 */
 int memberGetEventsCounter(Member member);
 
 /**
-* changeMemberEventsCounter: increases or decrease the associated events counter of the target Member by change_by.
+* memberChangeEventsCounter: increases or decrease the associated events counter of the target Member by change_by.
 *
 * @param member - Target Member.
 * @param change_by - the change for the counter.
@@ -97,6 +97,6 @@ int memberGetEventsCounter(Member member);
 * 	-1 if a NULL was sent or there is negative counter after the operation.
 * 	zero otherwise.
 */
-int changeMemberEventsCounter(Member member, int change_by);
+int memberChangeEventsCounter(Member member, int change_by);
 
 #endif //MEMBER_H_
