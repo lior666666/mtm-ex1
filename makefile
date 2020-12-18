@@ -13,12 +13,12 @@ event.o: event.c event.h priority_queue.h date.h member.h
 	$(compiler) -c $(COMP_FLAG) $*.c
 event_manager.o: event_manager.c event.h priority_queue.h date.h member.h event_manager.h
 	$(compiler) -c $(COMP_FLAG) $*.c
-event_manager_tests.o: tests/event_manager_tests.c test_utilities.h event_manager.h date.h
-	$(compiler) -c $(COMP_FLAG) $*.c
+event_manager_tests.o: tests/event_manager_tests.c tests/test_utilities.h event_manager.h date.h
+	$(compiler) -c $(COMP_FLAG) tests/event_manager_tests.c
 member.o: member.c member.h
 	$(compiler) -c $(COMP_FLAG) $*.c
-priority_queue_tests.o: tests/priority_queue_tests.c test_utilities.h priority_queue.h
-	$(compiler) -c $(COMP_FLAG) $*.c
+priority_queue_tests.o: tests/priority_queue_tests.c tests/test_utilities.h priority_queue.h
+	$(compiler) -c $(COMP_FLAG) tests/priority_queue_tests.c
 priority_queue.o: priority_queue.c priority_queue.h
 	$(compiler) -c $(COMP_FLAG) $*.c
 clean: 
