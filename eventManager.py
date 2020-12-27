@@ -101,7 +101,9 @@ def printYoungestStudents(in_file_path: str, out_file_path: str, k: int) -> int:
     counter = 0
     for el in sorted_list:
         if k > 0:
-            f.write(el[1] + "\n")
+            print(el[1])
+            f.write(el[1])
+            f.write("\n")
             k = k-1
             counter = counter + 1
     f.close()        
