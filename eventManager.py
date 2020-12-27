@@ -12,7 +12,11 @@ def isValidYearOfBirth(age, year):
     return (2020 - age == year)
 
 def isValidIdNmber(id_number):
-    digits_list = [int(digit) for digit in str(id_number)]
+    digits_list = []
+    for digit in id_number:
+        if not digit.isdigit():
+            return False
+        digits_list.append(int(digit))
     return (len(digits_list) == 8) and (digits_list[0] != 0)
 
 def isValidName(name):
@@ -56,7 +60,7 @@ def fileCorrect(orig_file_path: str, filtered_file_path: str):
         age = int(strip_student_list[2])
         year = int(strip_student_list[3])
         semester = int(strip_student_list[4])
-        if isValidName(name) and isValidIdNmber(id_number) and isValidSemester(semester) and isValidAge(age) and isValidYearOfBirth(age, year):
+        if isValidName(name) and isValidIdNmber(strip_student_list[0]) and isValidSemester(semester) and isValidAge(age) and isValidYearOfBirth(age, year):
             student_index = addIdNumberToList(students_id_list, id_number)
             valid_students_list.insert(student_index, strip_student_list)
 
@@ -73,16 +77,61 @@ def fileCorrect(orig_file_path: str, filtered_file_path: str):
 #   in_file_path: The path to the unfiltered subscription file
 #   out_file_path: file path of the output file
 def printYoungestStudents(in_file_path: str, out_file_path: str, k: int) -> int:
-    pass
-    #TODO
-    
+    if k < 0:
+        return -1
+    fileCorrect(in_file_path, out_file_path)
+    f = open(out_file_path, "r")
+    input_list = []
+    for line in f:
+        input_list.append(line.split(', '))
+    f.close()
+    sorted_list = []
+    while len(input_list) > 0:
+        minimum = input_list[0][2]
+        index = 0
+        for i, el in enumerate(input_list):
+            if el[2] < minimum:
+                minimum = el[2]
+                index = i
+            elif el[2] == minimum:
+                if input_list[index][0]>el[0]:
+                    index = i
+        sorted_list.append(input_list[index])
+        del input_list[index]
+
+    f = open(out_file_path, "w")
+    counter = 0
+    for el in sorted_list:
+        if k > 0:
+            f.write(el[1] + "\n")
+            k = k-1
+            counter = counter + 1
+    f.close()        
+    return counter 
     
 # Calculates the avg age for a given semester
 #   in_file_path: The path to the unfiltered subscription file
 #   retuns the avg, else error codes defined.
 def correctAgeAvg(in_file_path: str, semester: int) -> float:
-    pass
-    #TODO
+    if semester < 1:
+        return -1
+    temp_file = open("temp.txt", "w")
+    fileCorrect(in_file_path, "./temp")
+    temp_file.close()
+    f = open("temp.txt", "r")
+    input_list = []
+    for line in f:
+        input_list.append(line.split(','))
+    f.close()
+    sum = 0
+    counter = 0 
+    for i, el in enumerate(input_list):
+        if el[4] == semester:
+            sum = sum + el[2]
+            counter = counter + 1
+    if sum ==0: 
+        return sum        
+    return sum/counter
     
 
 #### PART 2 ####
