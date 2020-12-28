@@ -36,10 +36,9 @@ def studentPrint(target_file, strip_student_list):
 
 def addIdNumberToList(students_id_list, id_number):
     for i, current_id_number in enumerate(students_id_list):
-        if i != len(students_id_list)-1:
-            if current_id_number > id_number:
-                students_id_list.insert(i, id_number)
-                return i
+        if current_id_number > id_number:
+            students_id_list.insert(i, id_number)
+            return i
     students_id_list.append(id_number)
     return len(students_id_list)-1
 
@@ -87,14 +86,14 @@ def printYoungestStudents(in_file_path: str, out_file_path: str, k: int) -> int:
     f.close()
     sorted_list = []
     while len(input_list) > 0:
-        minimum = input_list[0][2]
+        minimum = int(input_list[0][2])
         index = 0
         for i, el in enumerate(input_list):
-            if el[2] < minimum:
-                minimum = el[2]
+            if int(el[2]) < minimum:
+                minimum = int(el[2])
                 index = i
-            elif el[2] == minimum:
-                if input_list[index][0]>el[0]:
+            elif int(el[2]) == minimum:
+                if int(input_list[index][0])>int(el[0]):
                     index = i
         sorted_list.append(input_list[index])
         del input_list[index]
@@ -115,23 +114,22 @@ def printYoungestStudents(in_file_path: str, out_file_path: str, k: int) -> int:
 def correctAgeAvg(in_file_path: str, semester: int) -> float:
     if semester < 1:
         return -1
-    temp_file = open("temp.txt", "w")
+    open("temp", "a").close()
     fileCorrect(in_file_path, "./temp")
-    temp_file.close()
-    f = open("temp.txt", "r")
+    f = open("temp", "r")
     input_list = []
     for line in f:
         input_list.append(line.split(','))
     f.close()
-    sum = 0
-    counter = 0 
+    sum_ages = 0
+    counter = 0
     for i, el in enumerate(input_list):
-        if el[4] == semester:
-            sum = sum + el[2]
+        if int(el[4]) == semester:
+            sum_ages = sum_ages + int(el[2])
             counter = counter + 1
-    if sum ==0: 
-        return sum        
-    return sum/counter
+    if counter == 0: 
+        return counter        
+    return sum_ages/counter
     
 
 #### PART 2 ####
