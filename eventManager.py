@@ -1,6 +1,6 @@
   
 #### IMPORTS ####
-#import event_manager as EM
+import event_manager as EM
 
 #### PART 1 ####
 def isValidSemester(semester):
@@ -142,16 +142,21 @@ def correctAgeAvg(in_file_path: str, semester: int) -> float:
         return counter        
     return sum_ages/counter
     
-
 #### PART 2 ####
 # Use SWIG :)
 # print the events in the list "events" using the functions from hw1
 #   events: list of dictionaries
 #   file_path: file path of the output file
 def printEventsList(events :list,file_path :str): #em, event_names: list, event_id_list: list, day: int, month: int, year: int):
-    pass
-    #TODO   
-    
+    start_date = events[0]['date']
+    for event in events:
+        if EM.dateCompare(start_date, event['date']) > 0:
+            start_date = event['date']
+    em = EM.createEventManager(start_date)
+    for event in events:
+        EM.emAddEventByDate(em, event['name'], event['date'], event['id'])
+    EM.emPrintAllEvents(em, file_path)
+
     
 def testPrintEventsList(file_path :str):
     events_lists=[{"name":"New Year's Eve","id":1,"date": EM.dateCreate(30, 12, 2020)},\
