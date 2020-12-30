@@ -12,7 +12,11 @@ def isValidYearOfBirth(age, year):
     return (2020 - age == year)
 
 def isValidIdNmber(id_number):
-    digits_list = [int(digit) for digit in str(id_number)]
+    digits_list = []
+    for digit in id_number:
+        if not digit.isdigit():
+            return False
+        digits_list.append(int(digit))
     return (len(digits_list) == 8) and (digits_list[0] != 0)
 
 def isValidName(name):
@@ -32,21 +36,14 @@ def studentPrint(target_file, strip_student_list):
 
 def addIdNumberToList(students_id_list, id_number):
     for i, current_id_number in enumerate(students_id_list):
-        if i != len(students_id_list)-1:
-            if current_id_number > id_number:
-                students_id_list.insert(i, id_number)
-                return i
+        if current_id_number > id_number:
+            students_id_list.insert(i, id_number)
+            return i
     students_id_list.append(id_number)
     return len(students_id_list)-1
 
-# Filters a file of students' subscription to specific event:
-#   orig_file_path: The path to the unfiltered subscription file
-#   filtered_file_path: The path to the new filtered file
-def fileCorrect(orig_file_path: str, filtered_file_path: str):
+def findCorrectStudents(orig_file_path: str, students_id_list, valid_students_list):
     origin_file = open(orig_file_path, 'r')
-    target_file = open(filtered_file_path, 'w')
-    students_id_list = []
-    valid_students_list = []
     for student in origin_file:
         student_list = student.split(',')
         strip_student_list = [i.strip() for i in student_list]
@@ -56,43 +53,55 @@ def fileCorrect(orig_file_path: str, filtered_file_path: str):
         age = int(strip_student_list[2])
         year = int(strip_student_list[3])
         semester = int(strip_student_list[4])
-        if isValidName(name) and isValidIdNmber(id_number) and isValidSemester(semester) and isValidAge(age) and isValidYearOfBirth(age, year):
+        if isValidName(name) and isValidIdNmber(strip_student_list[0]) and isValidSemester(semester) and isValidAge(age) and isValidYearOfBirth(age, year):
             student_index = addIdNumberToList(students_id_list, id_number)
             valid_students_list.insert(student_index, strip_student_list)
+    origin_file.close()
 
+# Filters a file of students' subscription to specific event:
+#   orig_file_path: The path to the unfiltered subscription file
+#   filtered_file_path: The path to the new filtered file
+def fileCorrect(orig_file_path: str, filtered_file_path: str):
+    target_file = open(filtered_file_path, 'w')
+    students_id_list = []
+    valid_students_list = []
+    findCorrectStudents(orig_file_path, students_id_list, valid_students_list)
     for i, id_number in enumerate(students_id_list):
         if i == len(students_id_list)-1:
             studentPrint(target_file, valid_students_list[i])
         elif id_number != students_id_list[i+1]:
             studentPrint(target_file, valid_students_list[i])
-    origin_file.close()
-    target_file.close()   
-    
+    target_file.close()
+  
 # Writes the names of the K youngest students which subscribed 
 # to the event correctly.
 #   in_file_path: The path to the unfiltered subscription file
 #   out_file_path: file path of the output file
 def printYoungestStudents(in_file_path: str, out_file_path: str, k: int) -> int:
-    pass
-    #TODO
-    fileCorrect(in_file_path, out_file_path)
     if k < 0:
         return -1
+    with open(in_file_path, 'r') as read_obj:
+        # read first character
+        one_char = read_obj.read(1)
+        # if not fetched then file is empty
+        if not one_char:
+           return -1
+    fileCorrect(in_file_path, out_file_path)
     f = open(out_file_path, "r")
     input_list = []
     for line in f:
-        input_list.append(line.split(','))
+        input_list.append(line.split(', '))
     f.close()
     sorted_list = []
     while len(input_list) > 0:
-        min = input_list[0][2]
+        minimum = int(input_list[0][2])
         index = 0
         for i, el in enumerate(input_list):
-            if el[2] < min:
-                min = el[2]
+            if int(el[2]) < minimum:
+                minimum = int(el[2])
                 index = i
-            elif el[2] == min:
-                if input_list[index][0]>el[0]:
+            elif int(el[2]) == minimum:
+                if int(input_list[index][0])>int(el[0]):
                     index = i
         sorted_list.append(input_list[index])
         del input_list[index]
@@ -101,9 +110,7 @@ def printYoungestStudents(in_file_path: str, out_file_path: str, k: int) -> int:
     counter = 0
     for el in sorted_list:
         if k > 0:
-            print(el[1])
-            f.write(el[1])
-            f.write("\n")
+            f.write(el[1] + "\n")
             k = k-1
             counter = counter + 1
     f.close()        
@@ -113,39 +120,43 @@ def printYoungestStudents(in_file_path: str, out_file_path: str, k: int) -> int:
 #   in_file_path: The path to the unfiltered subscription file
 #   retuns the avg, else error codes defined.
 def correctAgeAvg(in_file_path: str, semester: int) -> float:
-    pass
-    #TODO
     if semester < 1:
         return -1
-    temp_file = open("temp.txt", "w")
-    fileCorrect(in_file_path, "./temp")
-    temp_file.close()
-    f = open("temp.txt", "r")
+    students_id_list = []
+    valid_students_list = []
+    findCorrectStudents(in_file_path, students_id_list, valid_students_list)
     input_list = []
-    for line in f:
-        input_list.append(line.split(','))
-    f.close()
-    sum = 0
-    counter = 0 
+    for i, id_number in enumerate(students_id_list):
+        if i == len(students_id_list)-1:
+            input_list.append(valid_students_list[i])
+        elif id_number != students_id_list[i+1]:
+            input_list.append(valid_students_list[i])
+    sum_ages = 0
+    counter = 0
     for i, el in enumerate(input_list):
-        if el[4] == semester:
-            sum = sum + el[2]
+        if int(el[4]) == semester:
+            sum_ages = sum_ages + int(el[2])
             counter = counter + 1
-    if sum ==0: 
-        return sum        
-    return sum/counter
+    if counter == 0: 
+        return counter        
+    return sum_ages/counter
     
-    
-
 #### PART 2 ####
 # Use SWIG :)
 # print the events in the list "events" using the functions from hw1
 #   events: list of dictionaries
 #   file_path: file path of the output file
 def printEventsList(events :list,file_path :str): #em, event_names: list, event_id_list: list, day: int, month: int, year: int):
-    pass
-    #TODO   
-    
+    start_date = events[0]['date']
+    for event in events:
+        if EM.dateCompare(start_date, event['date']) > 0:
+            start_date = event['date']
+    em = EM.createEventManager(start_date)
+    for event in events:
+        EM.emAddEventByDate(em, event['name'], event['date'], event['id'])
+    EM.emPrintAllEvents(em, file_path)
+    return em
+
     
 def testPrintEventsList(file_path :str):
     events_lists=[{"name":"New Year's Eve","id":1,"date": EM.dateCreate(30, 12, 2020)},\
